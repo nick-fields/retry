@@ -1,7 +1,7 @@
 const { getInput, error, warning, info } = require('@actions/core');
 const { spawn } = require('child_process');
 const { join } = require('path');
-const ms = require('ms');
+const ms = require('milliseconds');
 var kill = require('tree-kill');
 
 function getInputNumber(id, required) {
