@@ -1,4 +1,4 @@
-name: Retry
+name: Retry Step
 description: 'Retry a step on failure or timeout'
 inputs:
   timeout_minutes:
