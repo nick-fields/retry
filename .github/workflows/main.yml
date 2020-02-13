@@ -18,6 +18,12 @@ jobs:
           node-version: 12
       - name: Install dependencies
         run: npm ci
+      - name: Test
+        run: ./
+        with: 
+          timeout_minutes: 1
+          max_attempts: 3
+          command: npm install jfslajfslkd
       - name: Release
         run: npx semantic-release # this only runs on master and develop. see .releaserc.js
         env:

@@ -1,8 +1,10 @@
-const { execSync } = require('child_process');
+const { exec } = require('child_process');
 const COMMAND = process.argv.splice(2).join(' ');
 
 function run(){
-    execSync(COMMAND, {stdio: 'inherit'});
+    await exec(COMMAND,(err, stdout, stderr)=>{
+        
+    });
 }
 
 run();
