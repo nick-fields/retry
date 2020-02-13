@@ -1,5 +1,6 @@
 # retry
-Retries a GitHub Action step on failure or timeout
+
+Retries an Action step on failure or timeout. This is currently intended to replace the `run` step for moody commands.
 
 ## Inputs
 
@@ -11,21 +12,21 @@ Retries a GitHub Action step on failure or timeout
 
 **Required** Number of attempts to make before failing the step
 
-### `retry_wait_seconds`
-
-**Required** Number of seconds to wait before attempting the next retry
-
 ### `command`
 
 **Required** The command to run
 
+### `retry_wait_seconds`
+
+**Optional** Number of seconds to wait before attempting the next retry. Defaults to `10`
+
 ### `polling_interval_seconds`
 
-**Required** Number of seconds to wait for each check that command has completed running
+**Optional** Number of seconds to wait while polling for command result. Defaults to `1`
 
 ## Example usage
 
-``` yaml
+```yaml
 uses: nick-invision/retry@v1
 with:
   timeout_minutes: 10

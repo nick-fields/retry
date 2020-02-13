@@ -1,6 +1,7 @@
-const { getInput } = require('@actions/core');
+const { getInput, error, warning, info } = require('@actions/core');
 const { spawn } = require('child_process');
 const { join } = require('path');
+const ms = require('ms');
 var kill = require('tree-kill');
 
 function getInputNumber(id, required) {
@@ -19,7 +20,7 @@ const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', true);
 const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
 const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
-const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) * 1000;
+const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
 
 // const TIMEOUT_MINUTES = 1;
 // const MAX_ATTEMPTS = 3;
@@ -29,19 +30,17 @@ const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', fals
 // const RETRY_WAIT_SECONDS = 5;
 // const POLLING_INTERVAL_SECONDS = 1 * 1000;
 
-const TIMEOUT = TIMEOUT_MINUTES * 60 * 1000;
-
 async function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
 async function runCmd() {
-  const end_time = Date.now() + TIMEOUT;
+  const end_time = Date.now() + ms.minutes(TIMEOUT_MINUTES);
   var done, exit;
 
   var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
 
-  child.on('exit', (code, signal) => {
+  child.on('exit', code => {
     if (code > 0) {
       exit = code;
     }
@@ -49,13 +48,13 @@ async function runCmd() {
   });
 
   do {
-    await wait(POLLING_INTERVAL_SECONDS);
+    await wait(ms.seconds(POLLING_INTERVAL_SECONDS));
   } while (Date.now() < end_time && !done && !exit);
 
   if (!done) {
     kill(child.pid);
-    await wait(RETRY_WAIT_SECONDS * 1000);
-    throw new Error(`Timeout hit`);
+    await wait(ms.seconds(RETRY_WAIT_SECONDS));
+    throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
   } else if (exit > 0) {
     throw new Error(`Child_process exited with error`);
   } else {
@@ -67,18 +66,19 @@ async function runAction() {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       await runCmd();
+      info(`Command completed after ${attempt} attempt(s).`);
       break;
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
       } else {
-        console.warn(`Attempt ${attempt} failed. Reason:`, error.message);
+        warning(`Attempt ${attempt} failed. Reason:`, error.message);
       }
     }
   }
 }
 
 runAction().catch(err => {
-  console.error(err.message);
+  error(err.message);
   process.exit(1);
 });

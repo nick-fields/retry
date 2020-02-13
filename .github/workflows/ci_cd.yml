@@ -1,0 +1,52 @@
+name: CI/CD
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+  ci:
+    name: Run Tests
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          command: npm install this-isnt-a-real-package-name-zzz
+  cd:
+    name: Publish Action
+    needs: ci
+    if: startsWith(github.ref, 'refs/tags/v.')
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm ci
+      - name: Release
+        run: npx semantic-release # this only runs on master
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  updateMajorVersionTag:
+    name: Update Major Version Tag
+    needs: cd
+    if: startsWith(github.ref, 'refs/tags/v.')
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: nowactions/update-majorver@master
+        with:
+          github_token: ${{ secrets. GITHUB_TOKEN }}

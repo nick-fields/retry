@@ -361,9 +361,10 @@ module.exports = require("path");
 /***/ 676:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-const { getInput } = __webpack_require__(470);
+const { getInput, error, warning, info } = __webpack_require__(470);
 const { spawn } = __webpack_require__(129);
 const { join } = __webpack_require__(622);
+const ms = __webpack_require__(761);
 var kill = __webpack_require__(791);
 
 function getInputNumber(id, required) {
@@ -382,7 +383,7 @@ const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', true);
 const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
 const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
-const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) * 1000;
+const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
 
 // const TIMEOUT_MINUTES = 1;
 // const MAX_ATTEMPTS = 3;
@@ -392,19 +393,17 @@ const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', fals
 // const RETRY_WAIT_SECONDS = 5;
 // const POLLING_INTERVAL_SECONDS = 1 * 1000;
 
-const TIMEOUT = TIMEOUT_MINUTES * 60 * 1000;
-
 async function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
 async function runCmd() {
-  const end_time = Date.now() + TIMEOUT;
+  const end_time = Date.now() + ms.minutes(TIMEOUT_MINUTES);
   var done, exit;
 
   var child = spawn('node', [__webpack_require__.ab + "exec.js", COMMAND], { stdio: 'inherit' });
 
-  child.on('exit', (code, signal) => {
+  child.on('exit', code => {
     if (code > 0) {
       exit = code;
     }
@@ -412,13 +411,13 @@ async function runCmd() {
   });
 
   do {
-    await wait(POLLING_INTERVAL_SECONDS);
+    await wait(ms.seconds(POLLING_INTERVAL_SECONDS));
   } while (Date.now() < end_time && !done && !exit);
 
   if (!done) {
     kill(child.pid);
-    await wait(RETRY_WAIT_SECONDS * 1000);
-    throw new Error(`Timeout hit`);
+    await wait(ms.seconds(RETRY_WAIT_SECONDS));
+    throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
   } else if (exit > 0) {
     throw new Error(`Child_process exited with error`);
   } else {
@@ -430,21 +429,191 @@ async function runAction() {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       await runCmd();
+      info(`Command completed after ${attempt} attempt(s).`);
       break;
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
       } else {
-        console.warn(`Attempt ${attempt} failed. Reason:`, error.message);
+        warning(`Attempt ${attempt} failed. Reason:`, error.message);
       }
     }
   }
 }
 
 runAction().catch(err => {
-  console.error(err.message);
+  error(err.message);
   process.exit(1);
 });
+
+
+/***/ }),
+
+/***/ 761:
+/***/ (function(module) {
+
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var w = d * 7;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} [options]
+ * @throws {Error} throw an error if val is not a non-empty string or a number
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options) {
+  options = options || {};
+  var type = typeof val;
+  if (type === 'string' && val.length > 0) {
+    return parse(val);
+  } else if (type === 'number' && isFinite(val)) {
+    return options.long ? fmtLong(val) : fmtShort(val);
+  }
+  throw new Error(
+    'val is not a non-empty string or a valid number. val=' +
+      JSON.stringify(val)
+  );
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  str = String(str);
+  if (str.length > 100) {
+    return;
+  }
+  var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
+    str
+  );
+  if (!match) {
+    return;
+  }
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'yrs':
+    case 'yr':
+    case 'y':
+      return n * y;
+    case 'weeks':
+    case 'week':
+    case 'w':
+      return n * w;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'hrs':
+    case 'hr':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'mins':
+    case 'min':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 'secs':
+    case 'sec':
+    case 's':
+      return n * s;
+    case 'milliseconds':
+    case 'millisecond':
+    case 'msecs':
+    case 'msec':
+    case 'ms':
+      return n;
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtShort(ms) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return Math.round(ms / d) + 'd';
+  }
+  if (msAbs >= h) {
+    return Math.round(ms / h) + 'h';
+  }
+  if (msAbs >= m) {
+    return Math.round(ms / m) + 'm';
+  }
+  if (msAbs >= s) {
+    return Math.round(ms / s) + 's';
+  }
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function fmtLong(ms) {
+  var msAbs = Math.abs(ms);
+  if (msAbs >= d) {
+    return plural(ms, msAbs, d, 'day');
+  }
+  if (msAbs >= h) {
+    return plural(ms, msAbs, h, 'hour');
+  }
+  if (msAbs >= m) {
+    return plural(ms, msAbs, m, 'minute');
+  }
+  if (msAbs >= s) {
+    return plural(ms, msAbs, s, 'second');
+  }
+  return ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, msAbs, n, name) {
+  var isPlural = msAbs >= n * 1.5;
+  return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
+}
 
 
 /***/ }),
