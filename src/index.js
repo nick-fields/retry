@@ -32,6 +32,9 @@ async function runCmd(){
 
     var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit'});
     var done = false;
+    child.on('error', ()=>{
+        throw new Error('An error occurred while executing command')
+    })
     child.on('exit', ()=>{
         done = true
     });
