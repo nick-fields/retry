@@ -33,12 +33,21 @@ async function runCmd(){
     var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit'});
     var done = false;
     child.on('error', ()=>{
+        if (child.stderr) {
+            throw `2An error occurred in stderr: ${child.stderr}`;
+        }
         throw new Error('An error occurred while executing command')
     })
     child.on('disconnect', ()=>{
+        if (child.stderr) {
+            throw `1An error occurred in stderr: ${child.stderr}`;
+        }
         throw new Error('A disconnect occurred while executing command')
     })
     child.on('exit', ()=>{
+        if (child.stderr) {
+            throw `An error occurred in stderr: ${child.stderr}`;
+        }
         done = true
     });
 
