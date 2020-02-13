@@ -367,12 +367,13 @@ var kill  = __webpack_require__(791);
 
 function getInputNumber(id, required){
     const input = getInput(id, { required });
+    const num = Number.parseInt(input)
 
-    if (!Number.isInteger(input)) {
+    if (!Number.isInteger(num)) {
         throw `Input ${id} only accepts numbers.  Received ${input}`
     }
     
-    return Number.parseInt(input)
+    return num
 }
 
 // inputs
