@@ -404,14 +404,6 @@ const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
 
-// const TIMEOUT_MINUTES = 1;
-// const MAX_ATTEMPTS = 3;
-// // const COMMAND = 'node -e "console.log(`test`);"';
-// const COMMAND = 'npm i kjsdfklsdjflksjdl';
-// // const COMMAND = 'node -e "process.exit(1)"';
-// const RETRY_WAIT_SECONDS = 5;
-// const POLLING_INTERVAL_SECONDS = 1 * 1000;
-
 async function wait(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
