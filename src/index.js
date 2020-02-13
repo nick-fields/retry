@@ -35,6 +35,9 @@ async function runCmd(){
     child.on('error', ()=>{
         throw new Error('An error occurred while executing command')
     })
+    child.on('disconnect', ()=>{
+        throw new Error('A disconnect occurred while executing command')
+    })
     child.on('exit', ()=>{
         done = true
     });
