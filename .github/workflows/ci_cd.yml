@@ -23,6 +23,26 @@ jobs:
           timeout_minutes: 1
           max_attempts: 3
           command: npm install this-isnt-a-real-package-name-zzz
+      - name: happy-path
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: npm -v
+      - name: sad-path (error)
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: node -e "process.exit(1)"
+      - name: sad-path (timeout)
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
   cd:
     name: Publish Action
     needs: ci
