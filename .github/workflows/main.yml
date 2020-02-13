@@ -20,6 +20,7 @@ jobs:
         run: npm ci
       - name: Test
         uses: ./
+        continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 3
