@@ -363,6 +363,7 @@ module.exports = require("path");
 
 const {getInput} = __webpack_require__(470)
 const { spawn } = __webpack_require__(129);
+const { join } = __webpack_require__(622);
 var kill  = __webpack_require__(791);
 
 function getInputNumber(id, required){
@@ -392,7 +393,7 @@ async function wait(ms){
 async function runCmd(){
     const end_time = Date.now() + TIMEOUT;
 
-    var child = spawn('node', ['./exec.js', COMMAND], { stdio: 'inherit'});
+    var child = spawn('node', [__webpack_require__.ab + "exec.js", COMMAND], { stdio: 'inherit'});
     var done = false;
     child.on('exit', ()=>{
         done = true

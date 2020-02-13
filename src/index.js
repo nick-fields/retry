@@ -1,5 +1,6 @@
 const {getInput} = require('@actions/core')
 const { spawn } = require('child_process');
+const { join } = require('path');
 var kill  = require('tree-kill');
 
 function getInputNumber(id, required){
@@ -29,7 +30,7 @@ async function wait(ms){
 async function runCmd(){
     const end_time = Date.now() + TIMEOUT;
 
-    var child = spawn('node', ['./exec.js', COMMAND], { stdio: 'inherit'});
+    var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit'});
     var done = false;
     child.on('exit', ()=>{
         done = true
