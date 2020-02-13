@@ -1,0 +1,72 @@
+name: CI/CD
+on:
+  push:
+    branches:
+      - '**'
+jobs:
+  # runs on branch pushes only
+  ci:
+    name: Run Tests
+    if: startsWith(github.ref, 'refs/heads')
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          command: npm install this-isnt-a-real-package-name-zzz
+      - name: happy-path
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: npm -v
+      - name: sad-path (error)
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: node -e "process.exit(1)"
+      - name: sad-path (timeout)
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
+
+  # runs on push to master only
+  cd:
+    name: Publish Action
+    needs: ci
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm ci
+      - name: Release
+        id: release
+        uses: cycjimmy/semantic-release-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag
+        run: git tag -f zzz && git push origin zzz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
