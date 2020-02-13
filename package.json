@@ -1,0 +1,38 @@
+{
+  "name": "retry",
+  "version": "0.0.0-managed-by-semantic-release",
+  "description": "Retries a GitHub Action step on failure or timeout.",
+  "scripts": {
+    "prepare": "ncc build src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nick-invision/retry.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nick-invision/retry/issues"
+  },
+  "homepage": "https://github.com/nick-invision/retry#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/github": "^1.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@semantic-release/changelog": "^3.0.6",
+    "@semantic-release/git": "^7.0.18",
+    "@zeit/ncc": "^0.20.5",
+    "husky": "^3.1.0",
+    "semantic-release": "^15.13.31"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "npm run prepare && git add ."
+    }
+  }
+}
