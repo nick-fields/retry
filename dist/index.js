@@ -461,16 +461,21 @@ async function runCmd() {
 
   if (!done) {
     kill(child.pid);
-    const waitStart = Date.now();
-    await wait(ms.seconds(RETRY_WAIT_SECONDS));
-    debug(`Waited ${ms.seconds(Date.now() - waitStart)}s`);
-    debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}s`);
+    await retryWait();
     throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
   } else if (exit > 0) {
+    await retryWait();
     throw new Error(`Child_process exited with error`);
   } else {
     return;
   }
+}
+
+async function retryWait() {
+  const waitStart = Date.now();
+  await wait(ms.seconds(RETRY_WAIT_SECONDS));
+  debug(`Waited ${ms.seconds(Date.now() - waitStart)}s`);
+  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}s`);
 }
 
 async function runAction() {
