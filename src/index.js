@@ -1,4 +1,4 @@
-const { getInput, error, warning, info } = require('@actions/core');
+const { getInput, error, warning, info, debug } = require('@actions/core');
 const { spawn } = require('child_process');
 const { join } = require('path');
 const ms = require('milliseconds');
@@ -23,7 +23,7 @@ const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
 
 async function wait(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 async function runCmd() {
@@ -32,7 +32,7 @@ async function runCmd() {
 
   var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
 
-  child.on('exit', code => {
+  child.on('exit', (code) => {
     if (code > 0) {
       exit = code;
     }
@@ -45,13 +45,21 @@ async function runCmd() {
 
   if (!done) {
     kill(child.pid);
-    await wait(ms.seconds(RETRY_WAIT_SECONDS));
+    await retryWait();
     throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
   } else if (exit > 0) {
+    await retryWait();
     throw new Error(`Child_process exited with error`);
   } else {
     return;
   }
+}
+
+async function retryWait() {
+  const waitStart = Date.now();
+  await wait(ms.seconds(RETRY_WAIT_SECONDS));
+  debug(`Waited ${Date.now() - waitStart}ms`);
+  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
 }
 
 async function runAction() {
@@ -70,7 +78,7 @@ async function runAction() {
   }
 }
 
-runAction().catch(err => {
+runAction().catch((err) => {
   error(err.message);
   process.exit(1);
 });
