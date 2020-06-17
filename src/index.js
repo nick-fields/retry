@@ -58,8 +58,8 @@ async function runCmd() {
 async function retryWait() {
   const waitStart = Date.now();
   await wait(ms.seconds(RETRY_WAIT_SECONDS));
-  debug(`Waited ${ms.seconds(Date.now() - waitStart)}s`);
-  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}s`);
+  debug(`Waited ${Date.now() - waitStart}ms`);
+  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
 }
 
 async function runAction() {
