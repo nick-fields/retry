@@ -18,19 +18,20 @@ jobs:
           node-version: 12
       - name: Install dependencies
         run: npm ci
-      - name: Test
-        uses: ./
-        continue-on-error: true
-        with:
-          timeout_minutes: 1
-          max_attempts: 3
-          command: npm install this-isnt-a-real-package-name-zzz
       - name: happy-path
         uses: ./
         with:
           timeout_minutes: 1
           max_attempts: 2
           command: npm -v
+      - name: sad-path (retry_wait_seconds)
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          retry_wait_seconds: 15
+          command: npm install this-isnt-a-real-package-name-zzz
       - name: sad-path (error)
         uses: ./
         continue-on-error: true
