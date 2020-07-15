@@ -1,6 +1,9 @@
 name: Retry Step
 description: 'Retry a step on failure or timeout'
 inputs:
+  filename_last_attempt:
+    description: Filename of the last attempt state file
+    required: true
   timeout_minutes:
     description: Minutes to wait before attempt times out
     required: true

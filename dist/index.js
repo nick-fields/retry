@@ -418,7 +418,9 @@ const { getInput, error, warning, info, debug } = __webpack_require__(470);
 const { spawn } = __webpack_require__(129);
 const { join } = __webpack_require__(622);
 const ms = __webpack_require__(156);
-var kill = __webpack_require__(791);
+const kill = __webpack_require__(791);
+
+const fs = __webpack_require__(747);
 
 function getInputNumber(id, required) {
   const input = getInput(id, { required });
@@ -432,6 +434,7 @@ function getInputNumber(id, required) {
 }
 
 // inputs
+const FILENAME_LAST_ATTEMPT = getInput('filename_last_attempt', false);
 const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', true);
 const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
 const COMMAND = getInput('command', { required: true });
@@ -479,8 +482,13 @@ async function retryWait() {
 }
 
 async function runAction() {
+  const filename_last_attempt = FILENAME_LAST_ATTEMPT || 'last_attempt';
+  fs.writeFileSync(filename_last_attempt, 'false');
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
+      if (attempt === MAX_ATTEMPTS) {
+        fs.writeFileSync(filename_last_attempt, 'true');
+      }
       await runCmd();
       info(`Command completed after ${attempt} attempt(s).`);
       break;
@@ -499,6 +507,13 @@ runAction().catch((err) => {
   process.exit(1);
 });
 
+
+/***/ }),
+
+/***/ 747:
+/***/ (function(module) {
+
+module.exports = require("fs");
 
 /***/ }),
 
