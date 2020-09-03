@@ -33,3 +33,7 @@ with:
   max_attempts: 3
   command: npm install
 ```
+
+## Requirements
+
+NodeJS is required for this action to run.  This runs without issue on all GitHub hosted runners but if you are running into issues with this on self hosted runners ensure NodeJS is installed.
