@@ -21,14 +21,20 @@ const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
 const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
+const RETRY_ON = getInput('retry_on') || 'both';
 
 async function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+var exit;
+var done;
+
 async function runCmd() {
   const end_time = Date.now() + ms.minutes(TIMEOUT_MINUTES);
-  var done, exit;
+
+  exit = 0;
+  done = false;
 
   var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
 
@@ -41,7 +47,7 @@ async function runCmd() {
 
   do {
     await wait(ms.seconds(POLLING_INTERVAL_SECONDS));
-  } while (Date.now() < end_time && !done && !exit);
+  } while (Date.now() < end_time && !done);
 
   if (!done) {
     kill(child.pid);
@@ -49,7 +55,7 @@ async function runCmd() {
     throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
   } else if (exit > 0) {
     await retryWait();
-    throw new Error(`Child_process exited with error`);
+    throw new Error(`Child_process exited with error code ${exit}`);
   } else {
     return;
   }
@@ -71,6 +77,12 @@ async function runAction() {
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
+      } else if (!done && RETRY_ON == 'nonzero') {
+        // error: timeout
+        throw error;
+      } else if (exit > 0 && RETRY_ON == 'timeout') {
+        // error: nonzero
+        throw error;
       } else {
         warning(`Attempt ${attempt} failed. Reason:`, error.message);
       }
@@ -78,7 +90,17 @@ async function runAction() {
   }
 }
 
-runAction().catch((err) => {
+runAction()
+.then(() => {
+  process.exit(0); // success
+})
+.catch((err) => {
   error(err.message);
-  process.exit(1);
+  if (exit > 0) {
+    // error: nonzero
+    process.exit(exit); // copy exit code
+  } else {
+    // error: Final attempt failed or timeout
+    process.exit(1);
+  }
 });
