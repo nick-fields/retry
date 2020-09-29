@@ -71,7 +71,7 @@ jobs:
           expected: failure
           actual: ${{ steps.sad_path_error.outcome }}
 
-      - name: retry_on (timeout) fails early if nonzero encountered
+      - name: retry_on (timeout) fails early if error encountered
         id: retry_on_timeout_fail
         uses: ./
         continue-on-error: true
@@ -93,27 +93,27 @@ jobs:
           expected: 2
           actual: ${{ steps.retry_on_timeout_fail.outputs.exit_code }}
 
-      - name: retry_on (nonzero)
-        id: retry_on_nonzero
+      - name: retry_on (error)
+        id: retry_on_error
         uses: ./
         continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 2
-          retry_on: nonzero
+          retry_on: error
           command: node -e "process.exit(2)"
       - uses: nick-invision/assert-action@v1
         with:
           expected: 2
-          actual: ${{ steps.retry_on_nonzero.outputs.total_attempts }}
+          actual: ${{ steps.retry_on_error.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
           expected: failure
-          actual: ${{ steps.retry_on_nonzero.outcome }}
+          actual: ${{ steps.retry_on_error.outcome }}
       - uses: nick-invision/assert-action@v1
         with:
           expected: 2
-          actual: ${{ steps.retry_on_nonzero.outputs.exit_code }}
+          actual: ${{ steps.retry_on_error.outputs.exit_code }}
 
 
         # timeout tests (takes longer to run so run last)
@@ -152,27 +152,27 @@ jobs:
           expected: failure
           actual: ${{ steps.retry_on_timeout.outcome }}
 
-      - name: retry_on (nonzero) fails early if timeout encountered
-        id: retry_on_nonzero_fail
+      - name: retry_on (error) fails early if timeout encountered
+        id: retry_on_error_fail
         uses: ./
         continue-on-error: true
         with:
           timeout_seconds: 15
           max_attempts: 2
-          retry_on: nonzero
+          retry_on: error
           command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
       - uses: nick-invision/assert-action@v1
         with:
           expected: 1
-          actual: ${{ steps.retry_on_nonzero_fail.outputs.total_attempts }}
+          actual: ${{ steps.retry_on_error_fail.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
           expected: failure
-          actual: ${{ steps.retry_on_nonzero_fail.outcome }}
+          actual: ${{ steps.retry_on_error_fail.outcome }}
       - uses: nick-invision/assert-action@v1
         with:
           expected: 1
-          actual: ${{ steps.retry_on_nonzero_fail.outputs.exit_code }}
+          actual: ${{ steps.retry_on_error_fail.outputs.exit_code }}
 
       - name: sad-path (timeout minutes)
         id: sad_path_timeout_minutes

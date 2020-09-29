@@ -117,11 +117,11 @@ async function runAction() {
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
-      } else if (!done && RETRY_ON == 'nonzero') {
+      } else if (!done && RETRY_ON === 'error') {
         // error: timeout
         throw error;
-      } else if (exit > 0 && RETRY_ON == 'timeout') {
-        // error: nonzero
+      } else if (exit > 0 && RETRY_ON === 'timeout') {
+        // error: error
         throw error;
       } else {
         warning(`Attempt ${attempt} failed. Reason: ${error.message}`);

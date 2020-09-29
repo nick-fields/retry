@@ -23,7 +23,7 @@ inputs:
     required: false
     default: 1
   retry_on:
-    description: Event to retry on.  Currently supported [any, timeout, nonzero]
+    description: Event to retry on.  Currently supported [any, timeout, error]
 outputs:
   total_attempts:
     description: The final number of attempts made
