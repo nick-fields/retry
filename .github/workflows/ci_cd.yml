@@ -18,13 +18,21 @@ jobs:
           node-version: 12
       - name: Install dependencies
         run: npm ci
+
       - name: happy-path
+        id: happy_path
         uses: ./
         with:
           timeout_minutes: 1
           max_attempts: 2
           command: npm -v
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.happy_path.outputs.total_attempts == '1' && steps.happy_path.outputs.exit_code == '0' }}
+
       - name: sad-path (retry_wait_seconds)
+        id: sad_path_wait_sec
         uses: ./
         continue-on-error: true
         with:
@@ -32,20 +40,97 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 15
           command: npm install this-isnt-a-real-package-name-zzz
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.sad_path_wait_sec.outputs.total_attempts == '3' && steps.sad_path_wait_sec.outcome == 'failure' }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'Command failed: npm install'
+          actual: ${{ steps.sad_path_wait_sec.outputs.exit_error }}
+          comparison: contains
+
       - name: sad-path (error)
+        id: sad_path_error
         uses: ./
         continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 2
           command: node -e "process.exit(1)"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.sad_path_error.outputs.total_attempts == '2' && steps.sad_path_error.outcome == 'failure' }}
+
       - name: sad-path (timeout)
+        id: sad_path_timeout
         uses: ./
         continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 2
           command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.sad_path_timeout.outputs.total_attempts == '2' && steps.sad_path_timeout.outcome == 'failure' }}
+
+      - name: retry_on (timeout)
+        id: retry_on_timeout
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          retry_on: timeout
+          command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.retry_on_timeout.outputs.total_attempts == '2' && steps.retry_on_timeout.outcome == 'failure' }}
+
+      - name: retry_on (timeout) fails early if nonzero encountered
+        id: retry_on_timeout_fail
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          retry_on: timeout
+          command: node -e "process.exit(2)"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.retry_on_timeout_fail.outputs.total_attempts == '1' && steps.retry_on_timeout_fail.outcome == 'failure' && steps.retry_on_timeout_fail.outputs.exit_code == '2' }}
+
+      - name: retry_on (nonzero)
+        id: retry_on_nonzero
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          retry_on: timeout
+          command: node -e "process.exit(2)"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.retry_on_nonzero.outputs.total_attempts == '2' && steps.retry_on_nonzero.outcome == 'failure' && steps.retry_on_nonzero.outputs.exit_code == '2' }}
+
+      - name: retry_on (nonzero) fails early if timeout encountered
+        id: retry_on_nonzero_fail
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          retry_on: timeout
+          command: node -e "(async()=>await new Promise(r => setTimeout(r, 120000)))()"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: true
+          actual: ${{ steps.retry_on_nonzero_fail.outputs.total_attempts == '2' && steps.retry_on_nonzero_fail.outcome == 'failure' && steps.retry_on_nonzero_fail.outputs.exit_code == '2' }}
 
   # runs on push to master only
   cd:

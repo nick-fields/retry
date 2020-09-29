@@ -19,6 +19,15 @@ inputs:
     description: Number of seconds to wait for each check that command has completed running
     required: false
     default: 1
+  retry_on:
+    description: Event to retry on.  Currently supported [any, timeout, nonzero]
+outputs:
+  total_attempts:
+    description: The final number of attempts made
+  exit_code:
+    description: The final exit code returned by the command
+  exit_error:
+    descritipn: The final error returned by the command
 runs:
   using: 'node12'
   main: 'dist/index.js'
