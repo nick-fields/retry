@@ -2,8 +2,11 @@ name: Retry Step
 description: 'Retry a step on failure or timeout'
 inputs:
   timeout_minutes:
-    description: Minutes to wait before attempt times out
-    required: true
+    description: Minutes to wait before attempt times out.  Must only specify either minutes or seconds
+    required: false
+  timeout_seconds:
+    description: Seconds to wait before attempt times out.  Must only specify either minutes or seconds
+    required: false
   max_attempts:
     description: Number of attempts to make before failing the step
     required: true

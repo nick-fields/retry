@@ -5,7 +5,8 @@ const ms = require('milliseconds');
 var kill = require('tree-kill');
 
 // inputs
-const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', true);
+const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
+const TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
 const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
 const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
@@ -23,6 +24,11 @@ function getInputNumber(id, required) {
   const input = getInput(id, { required });
   const num = Number.parseInt(input);
 
+  // empty is ok
+  if (!input && !required) {
+    return;
+  }
+
   if (!Number.isInteger(num)) {
     throw `Input ${id} only accepts numbers.  Received ${input}`;
   }
@@ -34,17 +40,50 @@ async function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+async function retryWait() {
+  const waitStart = Date.now();
+  await wait(ms.seconds(RETRY_WAIT_SECONDS));
+  debug(`Waited ${Date.now() - waitStart}ms`);
+  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
+}
+
+async function validateInputs() {
+  if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
+    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
+  }
+
+  if (TIMEOUT_SECONDS && TIMEOUT_SECONDS < RETRY_WAIT_SECONDS) {
+    throw new Error(
+      `timeout_seconds ${TIMEOUT_SECONDS}s less than retry_wait_seconds ${RETRY_WAIT_SECONDS}s`
+    );
+  }
+}
+
+function getTimeout() {
+  if (TIMEOUT_MINUTES) {
+    return ms.minutes(TIMEOUT_MINUTES);
+  }
+
+  return ms.seconds(TIMEOUT_SECONDS);
+}
+
 async function runCmd() {
-  const end_time = Date.now() + ms.minutes(TIMEOUT_MINUTES);
+  const end_time = Date.now() + getTimeout();
 
   exit = 0;
   done = false;
 
   var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
 
-  child.on('exit', (code) => {
+  child.on('exit', (code, signal) => {
+    debug(`Code: ${code}`);
+    debug(`Signal: ${signal}`);
     if (code > 0) {
       exit = code;
+    }
+    // timeouts are killed manually
+    if (signal === 'SIGTERM') {
+      return;
     }
     done = true;
   });
@@ -56,7 +95,7 @@ async function runCmd() {
   if (!done) {
     kill(child.pid);
     await retryWait();
-    throw new Error(`Timeout of ${TIMEOUT_MINUTES}m hit`);
+    throw new Error(`Timeout of ${getTimeout()}ms hit`);
   } else if (exit > 0) {
     await retryWait();
     throw new Error(`Child_process exited with error code ${exit}`);
@@ -65,14 +104,9 @@ async function runCmd() {
   }
 }
 
-async function retryWait() {
-  const waitStart = Date.now();
-  await wait(ms.seconds(RETRY_WAIT_SECONDS));
-  debug(`Waited ${Date.now() - waitStart}ms`);
-  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
-}
-
 async function runAction() {
+  await validateInputs();
+
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       // just keep overwriting attempts output
@@ -90,7 +124,7 @@ async function runAction() {
         // error: nonzero
         throw error;
       } else {
-        warning(`Attempt ${attempt} failed. Reason:`, error.message);
+        warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
       }
     }
   }
