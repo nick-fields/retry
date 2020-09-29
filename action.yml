@@ -27,7 +27,7 @@ outputs:
   exit_code:
     description: The final exit code returned by the command
   exit_error:
-    descritipn: The final error returned by the command
+    description: The final error returned by the command
 runs:
   using: 'node12'
   main: 'dist/index.js'
