@@ -2,8 +2,11 @@ name: Retry Step
 description: 'Retry a step on failure or timeout'
 inputs:
   timeout_minutes:
-    description: Minutes to wait before attempt times out
-    required: true
+    description: Minutes to wait before attempt times out.  Must only specify either minutes or seconds
+    required: false
+  timeout_seconds:
+    description: Seconds to wait before attempt times out.  Must only specify either minutes or seconds
+    required: false
   max_attempts:
     description: Number of attempts to make before failing the step
     required: true
@@ -19,6 +22,15 @@ inputs:
     description: Number of seconds to wait for each check that command has completed running
     required: false
     default: 1
+  retry_on:
+    description: Event to retry on.  Currently supported [any, timeout, error]
+outputs:
+  total_attempts:
+    description: The final number of attempts made
+  exit_code:
+    description: The final exit code returned by the command
+  exit_error:
+    description: The final error returned by the command
 runs:
   using: 'node12'
   main: 'dist/index.js'
