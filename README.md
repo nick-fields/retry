@@ -28,6 +28,18 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Event to retry on. Currently supports [any (default), timeout, error].
 
+### `hide_output`
+
+**Optional** Hide console output of command, both stdout and stderr stream. Default `false`.
+
+### `show_stats`
+
+**Optional** Show statistics on finish: Status, Return Code, Time, Number of printed lines. Default `false`.
+
+### `save_lines`
+
+**Optional** On finish, print a summary of last N lines of process outputs for every attempt. Value format: num_lines_stdout num_lines_stderr. Use value "all" to show all lines. Default `10 100` = show last 10 lines of stdout and last 100 lines of stderr.
+
 ## Outputs
 
 ### `total_attempts`

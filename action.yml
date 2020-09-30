@@ -24,6 +24,17 @@ inputs:
     default: 1
   retry_on:
     description: Event to retry on.  Currently supported [any, timeout, error]
+    default: any
+  hide_output:
+    description: Hide console output of command, both stdout and stderr stream.
+    default: false
+  show_stats:
+    description: 'Show statistics on finish: Status, Return Code, Time, Number of printed lines'
+    default: false
+  save_lines:
+    description: 'On finish, print a summary of last N lines of process outputs for every attempt. Value format: num_lines_stdout num_lines_stderr. Use value "all" to show all lines.'
+    default: 10 100
+
 outputs:
   total_attempts:
     description: The final number of attempts made
