@@ -115,6 +115,113 @@ jobs:
           expected: 2
           actual: ${{ steps.retry_on_error.outputs.exit_code }}
 
+      # test this manually. expected output:
+      #   now you see me
+      #   now you see me
+      - name: hide_output 1 (false)
+        id: hide_output_1
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 3
+          hide_output: false
+          command: echo now you see me
+      - name: hide_output 2 (true)
+        id: hide_output_2
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 3
+          hide_output: true
+          command: echo now you dont
+      - name: hide_output 3 (false)
+        id: hide_output_3
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 3
+          #hide_output: false # default is false
+          command: echo now you see me
+      - name: hide_output 4 (true)
+        id: hide_output_4
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 3
+          hide_output: 1 # boolean true
+          command: echo now you dont
+
+      # test this manually. expected output:
+      #   Attempt | Status  | RC | Time/ms | Out Lines | Err Lines
+      #         1 | NonZero |  1 |      20 |      1000 |         0
+      #         2 | NonZero |  1 |      20 |      1000 |         0
+      - name: show_stats 1
+        id: show_stats_1
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 2
+          hide_output: true
+          show_stats: true
+          command: seq 1 1000; false
+
+      # test this manually. expected output:
+      # TODO return code? use -1 for undefined RC?
+      #   Attempt | Status  | RC | Time/ms | Out Lines | Err Lines
+      #         1 | TimeOut |  ? |    1000 |         0 |      1000
+      #         2 | TimeOut |  ? |    1000 |         0 |      1000
+      - name: show_stats 2
+        id: show_stats_2
+        uses: ./
+        with:
+          timeout_seconds: 1
+          max_attempts: 2
+          show_stats: true
+          command: seq 1 1000 >&2; sleep 10
+
+      # test this manually. expected output:
+      #   Retry - Last Lines of Command Output:
+      #   Attempt 1:
+      #        10 2
+      #        10 1
+      #      1000 -4
+      #      1000 -3
+      #      1000 -2
+      #      1000 -1
+      #   Attempt 2:
+      #        10 2
+      #        10 1
+      #      1000 -4
+      #      1000 -3
+      #      1000 -2
+      #      1000 -1
+      # lines with negative numbers should be printed as errors
+      - name: save_lines 1
+        id: save_lines_1
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 2
+          save_lines: 2 4
+          command: seq 100 1; sleep 1; seq -100 -1 >&2; sleep 10
+
+      # test this manually. expected output:
+      #   Retry - Last Lines of Command Output:
+      #   Attempt 1:
+      #         0 1
+      #         0 2
+      #         0 3
+      #         0 4
+      # only lines with positive numbers should be visible
+      - name: save_lines 1
+        id: save_lines_1
+        uses: ./
+        with:
+          timeout_seconds: 2
+          max_attempts: 1
+          save_lines: all 0
+          command: seq 1 4; seq -1 -1 -4 >&2
+
 
         # timeout tests (takes longer to run so run last)
       - name: sad-path (timeout)

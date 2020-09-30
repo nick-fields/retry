@@ -99,7 +99,7 @@ async function runCmd() {
   const end_time = Date.now() + getTimeout();
   const time_zero = Date.now();
 
-  let exit = 0;
+  let exit_code = -1; // -1 means undefined
   let cmd_done = false;
 
   let state = STATE_OK;
@@ -190,9 +190,7 @@ async function runCmd() {
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
     debug(`Signal: ${signal}`);
-    if (code > 0) {
-      exit_code = code;
-    }
+    exit_code = code;
     // timeouts are killed manually
     if (signal === 'SIGTERM') {
       state = STATE_SIGTERM;
