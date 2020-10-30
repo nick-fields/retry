@@ -191,6 +191,11 @@ jobs:
           expected: failure
           actual: ${{ steps.sad_path_timeout.outcome }}
 
+      - name: log examples
+        uses: ./
+        with:
+          command: node ./.github/scripts/log-examples.js
+
   # runs on push to master only
   cd:
     name: Publish Action
