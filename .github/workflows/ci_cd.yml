@@ -31,6 +31,12 @@ jobs:
           expected: true
           actual: ${{ steps.happy_path.outputs.total_attempts == '1' && steps.happy_path.outputs.exit_code == '0' }}
 
+      - name: log examples
+        uses: ./
+        with:
+          command: node ./.github/scripts/log-examples.js
+          timeout_minutes: 1
+
       - name: sad-path (retry_wait_seconds)
         id: sad_path_wait_sec
         uses: ./
@@ -190,11 +196,6 @@ jobs:
         with:
           expected: failure
           actual: ${{ steps.sad_path_timeout.outcome }}
-
-      - name: log examples
-        uses: ./
-        with:
-          command: node ./.github/scripts/log-examples.js
 
   # runs on push to master only
   cd:
