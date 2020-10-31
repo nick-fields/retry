@@ -1,5 +1,5 @@
 const { getInput, error, warning, info, debug, setOutput } = require('@actions/core');
-const { spawn } = require('child_process');
+const child_process = require('child_process');
 const { join } = require('path');
 const ms = require('milliseconds');
 var kill = require('tree-kill');
@@ -73,7 +73,11 @@ async function runCmd() {
   exit = 0;
   done = false;
 
-  var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
+  const file = COMMAND.split(' ')[0];
+  const args = COMMAND.split(' ').slice(1);
+
+  var child = child_process.spawn(file, args, { stdio: 'inherit' });
+  // var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
 
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);

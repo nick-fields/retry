@@ -1,3 +1,3 @@
 console.log('console.log test');
-process.stdout.write('stdout test');
-process.stderr.write('stderr test');
+process.stdout.write('stdout test\n');
+process.stderr.write('stderr test\n');
