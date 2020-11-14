@@ -415,7 +415,7 @@ module.exports = require("path");
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
 const { getInput, error, warning, info, debug, setOutput } = __webpack_require__(470);
-const { spawn } = __webpack_require__(129);
+const child_process = __webpack_require__(129);
 const { join } = __webpack_require__(622);
 const ms = __webpack_require__(156);
 var kill = __webpack_require__(791);
@@ -489,7 +489,17 @@ async function runCmd() {
   exit = 0;
   done = false;
 
-  var child = spawn('node', [__webpack_require__.ab + "exec.js", COMMAND], { stdio: 'inherit' });
+  const file = COMMAND.split(' ')[0];
+  const args = COMMAND.split(' ').slice(1);
+
+  var child = child_process.exec(COMMAND, { stdio: 'inherit' });
+
+  child.stdout.on('data', (data) => {
+    console.log(data);
+  });
+  child.stderr.on('data', (data) => {
+    console.log(data);
+  });
 
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
