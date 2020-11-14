@@ -76,8 +76,14 @@ async function runCmd() {
   const file = COMMAND.split(' ')[0];
   const args = COMMAND.split(' ').slice(1);
 
-  var child = child_process.spawn(file, args, { stdio: 'inherit' });
-  // var child = spawn('node', [join(__dirname, 'exec.js'), COMMAND], { stdio: 'inherit' });
+  var child = child_process.exec(COMMAND, { stdio: 'inherit' });
+
+  child.stdout.on('data', (data) => {
+    console.log(data);
+  });
+  child.stderr.on('data', (data) => {
+    console.log(data);
+  });
 
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
