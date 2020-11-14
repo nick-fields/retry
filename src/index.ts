@@ -1,26 +1,27 @@
-const { getInput, error, warning, info, debug, setOutput } = require('@actions/core');
-const child_process = require('child_process');
-const { join } = require('path');
-const ms = require('milliseconds');
-var kill = require('tree-kill');
+import { getInput, error, warning, info, debug, setOutput } from '@actions/core';
+import { exec } from 'child_process';
+import ms from 'milliseconds';
+import kill from 'tree-kill';
+
+import { wait } from './util';
 
 // inputs
 const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
 const TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
-const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
+const MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
 const COMMAND = getInput('command', { required: true });
-const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
-const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
+const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
+const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 const RETRY_ON = getInput('retry_on') || 'any';
 
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 const OUTPUT_EXIT_CODE_KEY = 'exit_code';
 const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 
-var exit;
-var done;
+var exit: number;
+var done: boolean;
 
-function getInputNumber(id, required) {
+function getInputNumber(id: string, required: boolean): number | undefined {
   const input = getInput(id, { required });
   const num = Number.parseInt(input);
 
@@ -34,10 +35,6 @@ function getInputNumber(id, required) {
   }
 
   return num;
-}
-
-async function wait(ms) {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 async function retryWait() {
@@ -59,12 +56,14 @@ async function validateInputs() {
   }
 }
 
-function getTimeout() {
+function getTimeout(): number {
   if (TIMEOUT_MINUTES) {
     return ms.minutes(TIMEOUT_MINUTES);
+  } else if (TIMEOUT_SECONDS) {
+    return ms.seconds(TIMEOUT_SECONDS);
   }
 
-  return ms.seconds(TIMEOUT_SECONDS);
+  throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
 }
 
 async function runCmd() {
@@ -73,22 +72,19 @@ async function runCmd() {
   exit = 0;
   done = false;
 
-  const file = COMMAND.split(' ')[0];
-  const args = COMMAND.split(' ').slice(1);
+  var child = exec(COMMAND);
 
-  var child = child_process.exec(COMMAND, { stdio: 'inherit' });
-
-  child.stdout.on('data', (data) => {
-    console.log(data);
+  child.stdout?.on('data', (data) => {
+    process.stdout.write(data);
   });
-  child.stderr.on('data', (data) => {
-    console.log(data);
+  child.stderr?.on('data', (data) => {
+    process.stdout.write(data);
   });
 
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
     debug(`Signal: ${signal}`);
-    if (code > 0) {
+    if (code && code > 0) {
       exit = code;
     }
     // timeouts are killed manually
