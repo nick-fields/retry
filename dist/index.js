@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(676);
+/******/ 		return __webpack_require__(325);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -43,10 +43,72 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
+/***/ 82:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
 module.exports = require("os");
+
+/***/ }),
+
+/***/ 102:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
 
 /***/ }),
 
@@ -76,6 +138,294 @@ module.exports = {
 
 /***/ }),
 
+/***/ 322:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.wait = void 0;
+function wait(ms) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2 /*return*/, new Promise(function (r) { return setTimeout(r, ms); })];
+        });
+    });
+}
+exports.wait = wait;
+
+
+/***/ }),
+
+/***/ 325:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__(470);
+var child_process_1 = __webpack_require__(129);
+var milliseconds_1 = __importDefault(__webpack_require__(156));
+var tree_kill_1 = __importDefault(__webpack_require__(791));
+var util_1 = __webpack_require__(322);
+// inputs
+var TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
+var TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
+var MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
+var COMMAND = core_1.getInput('command', { required: true });
+var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
+var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
+var RETRY_ON = core_1.getInput('retry_on') || 'any';
+var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
+var OUTPUT_EXIT_CODE_KEY = 'exit_code';
+var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
+var exit;
+var done;
+function getInputNumber(id, required) {
+    var input = core_1.getInput(id, { required: required });
+    var num = Number.parseInt(input);
+    // empty is ok
+    if (!input && !required) {
+        return;
+    }
+    if (!Number.isInteger(num)) {
+        throw "Input " + id + " only accepts numbers.  Received " + input;
+    }
+    return num;
+}
+function retryWait() {
+    return __awaiter(this, void 0, void 0, function () {
+        var waitStart;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    waitStart = Date.now();
+                    return [4 /*yield*/, util_1.wait(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS))];
+                case 1:
+                    _a.sent();
+                    core_1.debug("Waited " + (Date.now() - waitStart) + "ms");
+                    core_1.debug("Configured wait: " + milliseconds_1.default.seconds(RETRY_WAIT_SECONDS) + "ms");
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function validateInputs() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
+                throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
+            }
+            if (TIMEOUT_SECONDS && TIMEOUT_SECONDS < RETRY_WAIT_SECONDS) {
+                throw new Error("timeout_seconds " + TIMEOUT_SECONDS + "s less than retry_wait_seconds " + RETRY_WAIT_SECONDS + "s");
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+function getTimeout() {
+    if (TIMEOUT_MINUTES) {
+        return milliseconds_1.default.minutes(TIMEOUT_MINUTES);
+    }
+    else if (TIMEOUT_SECONDS) {
+        return milliseconds_1.default.seconds(TIMEOUT_SECONDS);
+    }
+    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
+}
+function runCmd() {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var end_time, child;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    end_time = Date.now() + getTimeout();
+                    exit = 0;
+                    done = false;
+                    child = child_process_1.exec(COMMAND);
+                    (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
+                        process.stdout.write(data);
+                    });
+                    (_b = child.stderr) === null || _b === void 0 ? void 0 : _b.on('data', function (data) {
+                        process.stdout.write(data);
+                    });
+                    child.on('exit', function (code, signal) {
+                        core_1.debug("Code: " + code);
+                        core_1.debug("Signal: " + signal);
+                        if (code && code > 0) {
+                            exit = code;
+                        }
+                        // timeouts are killed manually
+                        if (signal === 'SIGTERM') {
+                            return;
+                        }
+                        done = true;
+                    });
+                    _c.label = 1;
+                case 1: return [4 /*yield*/, util_1.wait(milliseconds_1.default.seconds(POLLING_INTERVAL_SECONDS))];
+                case 2:
+                    _c.sent();
+                    _c.label = 3;
+                case 3:
+                    if (Date.now() < end_time && !done) return [3 /*break*/, 1];
+                    _c.label = 4;
+                case 4:
+                    if (!!done) return [3 /*break*/, 6];
+                    tree_kill_1.default(child.pid);
+                    return [4 /*yield*/, retryWait()];
+                case 5:
+                    _c.sent();
+                    throw new Error("Timeout of " + getTimeout() + "ms hit");
+                case 6:
+                    if (!(exit > 0)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, retryWait()];
+                case 7:
+                    _c.sent();
+                    throw new Error("Child_process exited with error code " + exit);
+                case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+function runAction() {
+    return __awaiter(this, void 0, void 0, function () {
+        var attempt, error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, validateInputs()];
+                case 1:
+                    _a.sent();
+                    attempt = 1;
+                    _a.label = 2;
+                case 2:
+                    if (!(attempt <= MAX_ATTEMPTS)) return [3 /*break*/, 7];
+                    _a.label = 3;
+                case 3:
+                    _a.trys.push([3, 5, , 6]);
+                    // just keep overwriting attempts output
+                    core_1.setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
+                    return [4 /*yield*/, runCmd()];
+                case 4:
+                    _a.sent();
+                    core_1.info("Command completed after " + attempt + " attempt(s).");
+                    return [3 /*break*/, 7];
+                case 5:
+                    error_1 = _a.sent();
+                    if (attempt === MAX_ATTEMPTS) {
+                        throw new Error("Final attempt failed. " + error_1.message);
+                    }
+                    else if (!done && RETRY_ON === 'error') {
+                        // error: timeout
+                        throw error_1;
+                    }
+                    else if (exit > 0 && RETRY_ON === 'timeout') {
+                        // error: error
+                        throw error_1;
+                    }
+                    else {
+                        core_1.warning("Attempt " + attempt + " failed. Reason: " + error_1.message);
+                    }
+                    return [3 /*break*/, 6];
+                case 6:
+                    attempt++;
+                    return [3 /*break*/, 2];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+runAction()
+    .then(function () {
+    core_1.setOutput(OUTPUT_EXIT_CODE_KEY, 0);
+    process.exit(0); // success
+})
+    .catch(function (err) {
+    core_1.error(err.message);
+    // these can be  helpful to know if continue-on-error is true
+    core_1.setOutput(OUTPUT_EXIT_ERROR_KEY, err.message);
+    core_1.setOutput(OUTPUT_EXIT_CODE_KEY, exit > 0 ? exit : 1);
+    // exit with exact error code if available, otherwise just exit with 1
+    process.exit(exit > 0 ? exit : 1);
+});
+
+
+/***/ }),
+
 /***/ 431:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -90,6 +440,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
 /**
  * Commands
  *
@@ -143,28 +494,14 @@ class Command {
         return cmdStr;
     }
 }
-/**
- * Sanitizes an input into a string so it can be passed into issueCommand safely
- * @param input input to sanitize into a string
- */
-function toCommandValue(input) {
-    if (input === null || input === undefined) {
-        return '';
-    }
-    else if (typeof input === 'string' || input instanceof String) {
-        return input;
-    }
-    return JSON.stringify(input);
-}
-exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -198,6 +535,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(431);
+const file_command_1 = __webpack_require__(102);
+const utils_1 = __webpack_require__(82);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 /**
@@ -224,9 +563,17 @@ var ExitCode;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    const convertedVal = command_1.toCommandValue(val);
+    const convertedVal = utils_1.toCommandValue(val);
     process.env[name] = convertedVal;
-    command_1.issueCommand('set-env', { name }, convertedVal);
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -242,7 +589,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -411,167 +764,10 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ 676:
-/***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
+/***/ 747:
+/***/ (function(module) {
 
-const { getInput, error, warning, info, debug, setOutput } = __webpack_require__(470);
-const child_process = __webpack_require__(129);
-const { join } = __webpack_require__(622);
-const ms = __webpack_require__(156);
-var kill = __webpack_require__(791);
-
-// inputs
-const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
-const TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
-const MAX_ATTEMPTS = getInputNumber('max_attempts', true);
-const COMMAND = getInput('command', { required: true });
-const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false);
-const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false);
-const RETRY_ON = getInput('retry_on') || 'any';
-
-const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
-const OUTPUT_EXIT_CODE_KEY = 'exit_code';
-const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
-
-var exit;
-var done;
-
-function getInputNumber(id, required) {
-  const input = getInput(id, { required });
-  const num = Number.parseInt(input);
-
-  // empty is ok
-  if (!input && !required) {
-    return;
-  }
-
-  if (!Number.isInteger(num)) {
-    throw `Input ${id} only accepts numbers.  Received ${input}`;
-  }
-
-  return num;
-}
-
-async function wait(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-async function retryWait() {
-  const waitStart = Date.now();
-  await wait(ms.seconds(RETRY_WAIT_SECONDS));
-  debug(`Waited ${Date.now() - waitStart}ms`);
-  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
-}
-
-async function validateInputs() {
-  if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
-    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-  }
-
-  if (TIMEOUT_SECONDS && TIMEOUT_SECONDS < RETRY_WAIT_SECONDS) {
-    throw new Error(
-      `timeout_seconds ${TIMEOUT_SECONDS}s less than retry_wait_seconds ${RETRY_WAIT_SECONDS}s`
-    );
-  }
-}
-
-function getTimeout() {
-  if (TIMEOUT_MINUTES) {
-    return ms.minutes(TIMEOUT_MINUTES);
-  }
-
-  return ms.seconds(TIMEOUT_SECONDS);
-}
-
-async function runCmd() {
-  const end_time = Date.now() + getTimeout();
-
-  exit = 0;
-  done = false;
-
-  const file = COMMAND.split(' ')[0];
-  const args = COMMAND.split(' ').slice(1);
-
-  var child = child_process.exec(COMMAND, { stdio: 'inherit' });
-
-  child.stdout.on('data', (data) => {
-    console.log(data);
-  });
-  child.stderr.on('data', (data) => {
-    console.log(data);
-  });
-
-  child.on('exit', (code, signal) => {
-    debug(`Code: ${code}`);
-    debug(`Signal: ${signal}`);
-    if (code > 0) {
-      exit = code;
-    }
-    // timeouts are killed manually
-    if (signal === 'SIGTERM') {
-      return;
-    }
-    done = true;
-  });
-
-  do {
-    await wait(ms.seconds(POLLING_INTERVAL_SECONDS));
-  } while (Date.now() < end_time && !done);
-
-  if (!done) {
-    kill(child.pid);
-    await retryWait();
-    throw new Error(`Timeout of ${getTimeout()}ms hit`);
-  } else if (exit > 0) {
-    await retryWait();
-    throw new Error(`Child_process exited with error code ${exit}`);
-  } else {
-    return;
-  }
-}
-
-async function runAction() {
-  await validateInputs();
-
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      // just keep overwriting attempts output
-      setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-      await runCmd();
-      info(`Command completed after ${attempt} attempt(s).`);
-      break;
-    } catch (error) {
-      if (attempt === MAX_ATTEMPTS) {
-        throw new Error(`Final attempt failed. ${error.message}`);
-      } else if (!done && RETRY_ON === 'error') {
-        // error: timeout
-        throw error;
-      } else if (exit > 0 && RETRY_ON === 'timeout') {
-        // error: error
-        throw error;
-      } else {
-        warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
-      }
-    }
-  }
-}
-
-runAction()
-  .then(() => {
-    setOutput(OUTPUT_EXIT_CODE_KEY, 0);
-    process.exit(0); // success
-  })
-  .catch((err) => {
-    error(err.message);
-
-    // these can be  helpful to know if continue-on-error is true
-    setOutput(OUTPUT_EXIT_ERROR_KEY, err.message);
-    setOutput(OUTPUT_EXIT_CODE_KEY, exit > 0 ? exit : 1);
-
-    // exit with exact error code if available, otherwise just exit with 1
-    process.exit(exit > 0 ? exit : 1);
-  });
-
+module.exports = require("fs");
 
 /***/ }),
 
