@@ -251,6 +251,7 @@ var COMMAND = core_1.getInput('command', { required: true });
 var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
 var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 var RETRY_ON = core_1.getInput('retry_on') || 'any';
+var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
 var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
@@ -398,7 +399,12 @@ function runAction() {
                         throw error_1;
                     }
                     else {
-                        core_1.warning("Attempt " + attempt + " failed. Reason: " + error_1.message);
+                        if (WARNING_ON_RETRY) {
+                            core_1.warning("Attempt " + attempt + " failed. Reason: " + error_1.message);
+                        }
+                        else {
+                            core_1.info("Attempt " + attempt + " failed. Reason: " + error_1.message);
+                        }
                     }
                     return [3 /*break*/, 6];
                 case 6:

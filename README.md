@@ -28,6 +28,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Event to retry on. Currently supports [any (default), timeout, error].
 
+### `warning_on_retry`
+
+**Optional** Whether to output a warning on retry, or just output to info. Defaults to `true`.
+
 ## Outputs
 
 ### `total_attempts`
