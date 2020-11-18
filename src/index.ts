@@ -13,6 +13,7 @@ const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 const RETRY_ON = getInput('retry_on') || 'any';
+const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
 
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 const OUTPUT_EXIT_CODE_KEY = 'exit_code';
@@ -47,12 +48,6 @@ async function retryWait() {
 async function validateInputs() {
   if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
     throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-  }
-
-  if (TIMEOUT_SECONDS && TIMEOUT_SECONDS < RETRY_WAIT_SECONDS) {
-    throw new Error(
-      `timeout_seconds ${TIMEOUT_SECONDS}s less than retry_wait_seconds ${RETRY_WAIT_SECONDS}s`
-    );
   }
 }
 
@@ -130,7 +125,11 @@ async function runAction() {
         // error: error
         throw error;
       } else {
-        warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
+        if (WARNING_ON_RETRY) {
+          warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
+        } else {
+          info(`Attempt ${attempt} failed. Reason: ${error.message}`);
+        }
       }
     }
   }

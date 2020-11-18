@@ -6,7 +6,11 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `timeout_minutes`
 
-**Required** Minutes to wait before attempt times out
+**Required** Minutes to wait before attempt times out. Must only specify either minutes or seconds
+
+### `timeout_seconds`
+
+**Required** Seconds to wait before attempt times out. Must only specify either minutes or seconds
 
 ### `max_attempts`
 
@@ -27,6 +31,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 ### `retry_on`
 
 **Optional** Event to retry on. Currently supports [any (default), timeout, error].
+
+### `warning_on_retry`
+
+**Optional** Whether to output a warning on retry, or just output to info. Defaults to `true`.
 
 ## Outputs
 
