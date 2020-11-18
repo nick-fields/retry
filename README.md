@@ -6,7 +6,11 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `timeout_minutes`
 
-**Required** Minutes to wait before attempt times out
+**Required** Minutes to wait before attempt times out. Must only specify either minutes or seconds
+
+### `timeout_seconds`
+
+**Required** Seconds to wait before attempt times out. Must only specify either minutes or seconds
 
 ### `max_attempts`
 
