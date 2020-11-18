@@ -49,12 +49,6 @@ async function validateInputs() {
   if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
     throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
   }
-
-  if (TIMEOUT_SECONDS && TIMEOUT_SECONDS < RETRY_WAIT_SECONDS) {
-    throw new Error(
-      `timeout_seconds ${TIMEOUT_SECONDS}s less than retry_wait_seconds ${RETRY_WAIT_SECONDS}s`
-    );
-  }
 }
 
 function getTimeout(): number {
