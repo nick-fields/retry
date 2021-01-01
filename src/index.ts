@@ -9,8 +9,10 @@ import { wait } from './util';
 const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
 const TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
 const MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
+const OS = getInput('os', { required: true });
 const COMMAND = getInput('command', { required: true });
 const RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
+const SHELL = getInput('shell') || 'pwsh';
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 const RETRY_ON = getInput('retry_on') || 'any';
 const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
@@ -67,7 +69,49 @@ async function runCmd() {
   exit = 0;
   done = false;
 
-  var child = exec(COMMAND);
+  let executable: string = SHELL + ".exe";
+  switch (SHELL) {
+    case "pwsh": {
+      executable = SHELL;
+      break;
+    }
+    case "bash": {
+      executable = SHELL;
+      break;
+    }
+    case "python": {
+      executable = SHELL;
+      break;
+    }
+    case "sh": {
+      if (OS === 'Windows') {
+        throw new Error(`Shell ${SHELL} not allowed on OS ${OS}`);
+      }
+      executable = SHELL;
+      break;
+    }
+    case "cmd": {
+      if (OS !== 'Windows') {
+        throw new Error(`Shell ${SHELL} not allowed on OS ${OS}`);
+      }
+      executable = SHELL + ".exe";
+      break;
+    }
+    case "powershell": {
+      if (OS !== 'Windows') {
+        throw new Error(`Shell ${SHELL} not allowed on OS ${OS}`);
+      }
+      executable = SHELL + ".exe";
+      break;
+    }
+    default: {
+      throw new Error(`Shell ${SHELL} required`);
+      break;
+    }
+  }
+
+
+  var child = exec(COMMAND, { 'shell': executable });
 
   child.stdout?.on('data', (data) => {
     process.stdout.write(data);

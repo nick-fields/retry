@@ -247,8 +247,10 @@ var util_1 = __webpack_require__(322);
 var TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
 var TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
 var MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
+var OS = core_1.getInput('os', { required: true });
 var COMMAND = core_1.getInput('command', { required: true });
 var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
+var SHELL = core_1.getInput('shell') || 'pwsh';
 var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 var RETRY_ON = core_1.getInput('retry_on') || 'any';
 var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
@@ -308,14 +310,54 @@ function getTimeout() {
 function runCmd() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var end_time, child;
+        var end_time, executable, child;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     end_time = Date.now() + getTimeout();
                     exit = 0;
                     done = false;
-                    child = child_process_1.exec(COMMAND);
+                    executable = SHELL + ".exe";
+                    switch (SHELL) {
+                        case "pwsh": {
+                            executable = SHELL;
+                            break;
+                        }
+                        case "bash": {
+                            executable = SHELL;
+                            break;
+                        }
+                        case "python": {
+                            executable = SHELL;
+                            break;
+                        }
+                        case "sh": {
+                            if (OS === 'Windows') {
+                                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+                            }
+                            executable = SHELL;
+                            break;
+                        }
+                        case "cmd": {
+                            if (OS !== 'Windows') {
+                                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+                            }
+                            executable = SHELL + ".exe";
+                            break;
+                        }
+                        case "powershell": {
+                            if (OS !== 'Windows') {
+                                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+                            }
+                            executable = SHELL + ".exe";
+                            break;
+                        }
+                        default: {
+                            throw new Error("Shell " + SHELL + " required");
+                            break;
+                        }
+                    }
+                    child = child_process_1.exec(COMMAND, { 'shell': executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
