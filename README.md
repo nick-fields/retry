@@ -24,6 +24,12 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Number of seconds to wait before attempting the next retry. Defaults to `10`
 
+### `shell`
+    
+**Optional** Shell to use to execute `command`. Defaults to `pwsh`. See [here](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell) for shell options
+    required: false
+    default: pwsh 
+
 ### `polling_interval_seconds`
 
 **Optional** Number of seconds to wait while polling for command result. Defaults to `1`
@@ -51,6 +57,17 @@ The final exit code returned by the command
 The final error returned by the command
 
 ## Examples
+
+### Shell
+
+```yaml
+uses: nick-invision/retry@v2
+with:
+  timeout_minutes: 10
+  max_attempts: 3
+  shell: pwsh
+  command: dir
+```
 
 ### Timeout in minutes
 

@@ -249,9 +249,11 @@ var TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
 var MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
 var COMMAND = core_1.getInput('command', { required: true });
 var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
+var SHELL = core_1.getInput('shell');
 var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 var RETRY_ON = core_1.getInput('retry_on') || 'any';
 var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
+var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
 var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
@@ -305,17 +307,52 @@ function getTimeout() {
     }
     throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
 }
+function getExecutable() {
+    if (!SHELL) {
+        return OS === 'win32' ? 'powershell' : 'bash';
+    }
+    var executable;
+    switch (SHELL) {
+        case "bash":
+        case "python":
+        case "pwsh": {
+            executable = SHELL;
+            break;
+        }
+        case "sh": {
+            if (OS === 'win32') {
+                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+            }
+            executable = SHELL;
+            break;
+        }
+        case "cmd":
+        case "powershell": {
+            if (OS !== 'win32') {
+                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+            }
+            executable = SHELL + ".exe";
+            break;
+        }
+        default: {
+            throw new Error("Shell " + SHELL + " required");
+        }
+    }
+    return executable;
+}
 function runCmd() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var end_time, child;
+        var end_time, executable, child;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     end_time = Date.now() + getTimeout();
+                    executable = getExecutable();
                     exit = 0;
                     done = false;
-                    child = child_process_1.exec(COMMAND);
+                    core_1.debug("Running command " + COMMAND + " on " + OS + " using shell " + executable);
+                    child = child_process_1.exec(COMMAND, { 'shell': executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
