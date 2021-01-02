@@ -20,10 +20,6 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Required** The command to run
 
-### `OS`
-
-**Required** The OS passed from the runner (runner.OS)
-
 ### `retry_wait_seconds`
 
 **Optional** Number of seconds to wait before attempting the next retry. Defaults to `10`
@@ -69,7 +65,6 @@ uses: nick-invision/retry@v2
 with:
   timeout_minutes: 10
   max_attempts: 3
-  os: ${{ runner.os }}
   shell: pwsh
   command: dir
 ```

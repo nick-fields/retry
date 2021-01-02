@@ -18,13 +18,9 @@ inputs:
     description: Number of seconds to wait before attempting the next retry
     required: false
     default: 10
-  OS:
-    description: OS Passed from Runner (runner.OS)
-    required: true
   shell:
     description: Shell to Use to retry (Default is pwsh)
     required: false
-    default: pwsh 
   polling_interval_seconds:
     description: Number of seconds to wait for each check that command has completed running
     required: false
