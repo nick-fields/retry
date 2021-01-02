@@ -248,7 +248,7 @@ jobs:
           timeout_minutes: 1
           max_attempts: 2
           shell: python
-          command: print "1, 2, 3"
+          command: print('1', '2', '3')
 
   # runs on push to master only
   cd:
