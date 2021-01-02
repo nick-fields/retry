@@ -197,7 +197,7 @@ jobs:
           expected: failure
           actual: ${{ steps.sad_path_timeout.outcome }}
 
-      - name: sad-path (wrong shell)
+      - name: sad-path (wrong shell for OS)
         id: wrong_shell
         uses: ./
         continue-on-error: true
@@ -215,6 +215,40 @@ jobs:
           expected: failure
           actual: ${{ steps.wrong_shell.outcome }}
 
+  ci_windows:
+    name: Run Windows Tests
+    if: startsWith(github.ref, 'refs/heads')
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install dependencies
+        run: npm ci
+      - name: Powershell test
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          shell: powershell
+          command: Get-ComputerInfo
+      - name: CMD.exe test
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          shell: cmd
+          command: echo %PATH%
+      - name: Python test
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          shell: python
+          command: print 1, 2, 3
 
   # runs on push to master only
   cd:
