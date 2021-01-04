@@ -19,7 +19,7 @@ inputs:
     required: false
     default: 10
   shell:
-    description: Shell to Use to retry (Default is pwsh)
+    description: Alternate shell to use (defaults to powershell on windows, bash otherwise).  Supports bash, python, pwsh, sh, cmd, and powershell
     required: false
   polling_interval_seconds:
     description: Number of seconds to wait for each check that command has completed running

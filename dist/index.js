@@ -335,7 +335,7 @@ function getExecutable() {
             break;
         }
         default: {
-            throw new Error("Shell " + SHELL + " required");
+            throw new Error("Shell " + SHELL + " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells");
         }
     }
     return executable;
