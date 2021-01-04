@@ -26,9 +26,7 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `shell`
     
-**Optional** Shell to use to execute `command`. Defaults to `pwsh`. See [here](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell) for shell options
-    required: false
-    default: pwsh 
+**Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise.  Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell)
 
 ### `polling_interval_seconds`
 
