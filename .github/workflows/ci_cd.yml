@@ -63,6 +63,7 @@ jobs:
       - name: on-retry-cmd
         id: on-retry-cmd
         uses: ./
+        continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 3
@@ -72,6 +73,7 @@ jobs:
       - name: on-retry-cmd (on-retry fails)
         id: on-retry-cmd-fails
         uses: ./
+        continue-on-error: true
         with:
           timeout_minutes: 1
           max_attempts: 3
