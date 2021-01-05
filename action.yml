@@ -30,6 +30,9 @@ inputs:
   warning_on_retry:
     description: Whether to output a warning on retry, or just output to info. Defaults to true
     default: true
+  on_retry_command:
+    description: Command to run before a retry (such as a cleanup script).  Any error thrown from retry command is caught and surfaced as a warning.
+    required: false
 outputs:
   total_attempts:
     description: The final number of attempts made

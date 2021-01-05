@@ -40,6 +40,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Whether to output a warning on retry, or just output to info. Defaults to `true`.
 
+### `on_retry_command`
+
+**Optional** Command to run before a retry (such as a cleanup script).  Any error thrown from retry command is caught and surfaced as a warning.
+
 ## Outputs
 
 ### `total_attempts`
@@ -136,6 +140,17 @@ with:
   with:
     expected: 3
     actual: ${{ steps.retry.outputs.total_attempts }}
+```
+
+### Run script after failure but before retry
+
+```yaml
+uses: nick-invision/retry@v2
+with:
+  timeout_seconds: 15
+  max_attempts: 3
+  command: npm run some-flaky-script-that-outputs-something
+  on_retry_command: npm run cleanup-flaky-script-output
 ```
 
 ## Requirements

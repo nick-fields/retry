@@ -253,6 +253,7 @@ var SHELL = core_1.getInput('shell');
 var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 var RETRY_ON = core_1.getInput('retry_on') || 'any';
 var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
+var ON_RETRY_COMMAND = core_1.getInput('on_retry_command');
 var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
@@ -340,6 +341,32 @@ function getExecutable() {
     }
     return executable;
 }
+function runRetryCmd() {
+    return __awaiter(this, void 0, void 0, function () {
+        var error_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    // if no retry script, just continue
+                    if (!ON_RETRY_COMMAND) {
+                        return [2 /*return*/];
+                    }
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, child_process_1.execSync(ON_RETRY_COMMAND, { stdio: 'inherit' })];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    error_1 = _a.sent();
+                    core_1.info("WARNING: Retry command threw the error " + error_1.message);
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/];
+            }
+        });
+    });
+}
 function runCmd() {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
@@ -399,7 +426,7 @@ function runCmd() {
 }
 function runAction() {
     return __awaiter(this, void 0, void 0, function () {
-        var attempt, error_1;
+        var attempt, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, validateInputs()];
@@ -408,43 +435,44 @@ function runAction() {
                     attempt = 1;
                     _a.label = 2;
                 case 2:
-                    if (!(attempt <= MAX_ATTEMPTS)) return [3 /*break*/, 7];
+                    if (!(attempt <= MAX_ATTEMPTS)) return [3 /*break*/, 12];
                     _a.label = 3;
                 case 3:
-                    _a.trys.push([3, 5, , 6]);
+                    _a.trys.push([3, 5, , 11]);
                     // just keep overwriting attempts output
                     core_1.setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
                     return [4 /*yield*/, runCmd()];
                 case 4:
                     _a.sent();
                     core_1.info("Command completed after " + attempt + " attempt(s).");
-                    return [3 /*break*/, 7];
+                    return [3 /*break*/, 12];
                 case 5:
-                    error_1 = _a.sent();
-                    if (attempt === MAX_ATTEMPTS) {
-                        throw new Error("Final attempt failed. " + error_1.message);
-                    }
-                    else if (!done && RETRY_ON === 'error') {
-                        // error: timeout
-                        throw error_1;
-                    }
-                    else if (exit > 0 && RETRY_ON === 'timeout') {
-                        // error: error
-                        throw error_1;
+                    error_2 = _a.sent();
+                    if (!(attempt === MAX_ATTEMPTS)) return [3 /*break*/, 6];
+                    throw new Error("Final attempt failed. " + error_2.message);
+                case 6:
+                    if (!(!done && RETRY_ON === 'error')) return [3 /*break*/, 7];
+                    // error: timeout
+                    throw error_2;
+                case 7:
+                    if (!(exit > 0 && RETRY_ON === 'timeout')) return [3 /*break*/, 8];
+                    // error: error
+                    throw error_2;
+                case 8: return [4 /*yield*/, runRetryCmd()];
+                case 9:
+                    _a.sent();
+                    if (WARNING_ON_RETRY) {
+                        core_1.warning("Attempt " + attempt + " failed. Reason: " + error_2.message);
                     }
                     else {
-                        if (WARNING_ON_RETRY) {
-                            core_1.warning("Attempt " + attempt + " failed. Reason: " + error_1.message);
-                        }
-                        else {
-                            core_1.info("Attempt " + attempt + " failed. Reason: " + error_1.message);
-                        }
+                        core_1.info("Attempt " + attempt + " failed. Reason: " + error_2.message);
                     }
-                    return [3 /*break*/, 6];
-                case 6:
+                    _a.label = 10;
+                case 10: return [3 /*break*/, 11];
+                case 11:
                     attempt++;
                     return [3 /*break*/, 2];
-                case 7: return [2 /*return*/];
+                case 12: return [2 /*return*/];
             }
         });
     });
