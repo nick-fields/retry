@@ -1,5 +1,5 @@
 import { getInput, error, warning, info, debug, setOutput } from '@actions/core';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import ms from 'milliseconds';
 import kill from 'tree-kill';
 
@@ -15,6 +15,7 @@ const SHELL = getInput('shell');
 const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
 const RETRY_ON = getInput('retry_on') || 'any';
 const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
+const ON_RETRY_COMMAND = getInput('on_retry_command');
 
 const OS = process.platform;
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
@@ -98,6 +99,19 @@ function getExecutable(): string {
   return executable
 }
 
+async function runRetryCmd(): Promise<void> {
+  // if no retry script, just continue
+  if (!ON_RETRY_COMMAND) {
+    return;
+  }
+
+  try {
+    await execSync(ON_RETRY_COMMAND, { stdio: 'inherit' });
+  } catch (error) {
+    warning(`WARNING: Retry command threw the error ${error.message}`)
+  }
+}
+
 async function runCmd() {
   const end_time = Date.now() + getTimeout();
   const executable = getExecutable();
@@ -164,6 +178,7 @@ async function runAction() {
         // error: error
         throw error;
       } else {
+        await runRetryCmd();
         if (WARNING_ON_RETRY) {
           warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
         } else {

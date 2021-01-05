@@ -40,6 +40,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Whether to output a warning on retry, or just output to info. Defaults to `true`.
 
+### `on_retry_command`
+
+**Optional** Command to run before a retry (such as a cleanup script) before next attempt.  Any error thrown during retry script is surfaced as a warning.
+
 ## Outputs
 
 ### `total_attempts`
