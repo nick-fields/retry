@@ -108,7 +108,7 @@ async function runRetryCmd(): Promise<void> {
   try {
     await execSync(ON_RETRY_COMMAND, { stdio: 'inherit' });
   } catch (error) {
-    warning(`WARNING: Retry command threw the error ${error.message}`)
+    info(`WARNING: Retry command threw the error ${error.message}`)
   }
 }
 

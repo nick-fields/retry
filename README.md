@@ -42,7 +42,7 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `on_retry_command`
 
-**Optional** Command to run before a retry (such as a cleanup script) before next attempt.  Any error thrown during retry script is surfaced as a warning.
+**Optional** Command to run before a retry (such as a cleanup script).  Any error thrown from retry command is caught and surfaced as a warning.
 
 ## Outputs
 

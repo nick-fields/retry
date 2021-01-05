@@ -360,7 +360,7 @@ function runRetryCmd() {
                     return [3 /*break*/, 4];
                 case 3:
                     error_1 = _a.sent();
-                    core_1.warning("WARNING: Retry command threw the error " + error_1.message);
+                    core_1.info("WARNING: Retry command threw the error " + error_1.message);
                     return [3 /*break*/, 4];
                 case 4: return [2 /*return*/];
             }
