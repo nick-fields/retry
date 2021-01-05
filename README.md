@@ -142,6 +142,17 @@ with:
     actual: ${{ steps.retry.outputs.total_attempts }}
 ```
 
+### Run script after failure but before retry
+
+```yaml
+uses: nick-invision/retry@v2
+with:
+  timeout_seconds: 15
+  max_attempts: 3
+  command: npm run some-flaky-script-that-outputs-something
+  on_retry_command: npm run cleanup-flaky-script-output
+```
+
 ## Requirements
 
 NodeJS is required for this action to run. This runs without issue on all GitHub hosted runners but if you are running into issues with this on self hosted runners ensure NodeJS is installed.

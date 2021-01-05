@@ -66,9 +66,19 @@ jobs:
         continue-on-error: true
         with:
           timeout_minutes: 1
-          max_attempts: 2
+          max_attempts: 3
           command: node -e "process.exit(1)"
           on_retry_command: node -e "console.log('this is a retry command')"
+
+      - name: on-retry-cmd (on-retry fails)
+        id: on-retry-cmd
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          command: node -e "process.exit(1)"
+          on_retry_command: node -e "throw new Error('This is an on-retry command error')"
 
       - name: sad-path (error)
         id: sad_path_error
