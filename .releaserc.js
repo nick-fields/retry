@@ -8,6 +8,7 @@ module.exports = {
           { type: 'minor', release: 'minor' },
           { type: 'major', release: 'major' },
           { type: 'patch', release: 'patch' },
+          { type: 'test', release: false },
           { scope: 'no-release', release: false },
         ],
       },
