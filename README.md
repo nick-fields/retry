@@ -25,8 +25,8 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 **Optional** Number of seconds to wait before attempting the next retry. Defaults to `10`
 
 ### `shell`
-    
-**Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise.  Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell)
+
+**Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise. Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell)
 
 ### `polling_interval_seconds`
 
@@ -42,7 +42,7 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `on_retry_command`
 
-**Optional** Command to run before a retry (such as a cleanup script).  Any error thrown from retry command is caught and surfaced as a warning.
+**Optional** Command to run before a retry (such as a cleanup script). Any error thrown from retry command is caught and surfaced as a warning.
 
 ## Outputs
 
@@ -151,6 +151,33 @@ with:
   max_attempts: 3
   command: npm run some-flaky-script-that-outputs-something
   on_retry_command: npm run cleanup-flaky-script-output
+```
+
+### Run multi-line, multi-command script
+
+```yaml
+name: Multi-line multi-command Test
+uses: ./
+with:
+  timeout_minutes: 1
+  max_attempts: 2
+  command: |
+    Get-ComputerInfo
+    Get-Date
+```
+
+### Run multi-line, single-command script
+
+```yaml
+name: Multi-line single-command Test
+uses: ./
+with:
+  timeout_minutes: 1
+  max_attempts: 2
+  shell: cmd
+  command: >-
+    echo "this is
+ a test"
 ```
 
 ## Requirements

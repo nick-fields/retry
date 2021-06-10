@@ -141,7 +141,6 @@ jobs:
           expected: 2
           actual: ${{ steps.retry_on_error.outputs.exit_code }}
 
-
         # timeout tests (takes longer to run so run last)
       - name: sad-path (timeout)
         id: sad_path_timeout
@@ -225,7 +224,7 @@ jobs:
           timeout_minutes: 1
           max_attempts: 2
           shell: cmd
-          command: "dir"
+          command: 'dir'
       - uses: nick-invision/assert-action@v1
         with:
           expected: 2
@@ -269,6 +268,23 @@ jobs:
           max_attempts: 2
           shell: python
           command: print('1', '2', '3')
+      - name: Multi-line multi-command Test
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          command: |
+            Get-ComputerInfo
+            Get-Date
+      - name: Multi-line single-command Test
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          shell: cmd
+          command: >-
+            echo "this is
+            a test"
 
   # runs on push to master only
   cd:
