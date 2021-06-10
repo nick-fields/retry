@@ -274,8 +274,8 @@ jobs:
           timeout_minutes: 1
           max_attempts: 2
           command: |
-            print('a', 'b', 'c')
-            print('1', '2', '3')
+            Get-ComputerInfo
+            Get-Date
       - name: Multi-line single-command Test
         uses: ./
         with:

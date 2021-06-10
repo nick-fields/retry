@@ -162,8 +162,8 @@ with:
   timeout_minutes: 1
   max_attempts: 2
   command: |
-    print('a', 'b', 'c')
-    print('1', '2', '3')
+    Get-ComputerInfo
+    Get-Date
 ```
 
 ### Run multi-line, single-command script
