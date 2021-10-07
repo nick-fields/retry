@@ -33,6 +33,9 @@ inputs:
   on_retry_command:
     description: Command to run before a retry (such as a cleanup script).  Any error thrown from retry command is caught and surfaced as a warning.
     required: false
+  continue_on_error:
+    description: Exits successfully even if an error occurs.  Same as native continue-on-error behavior, but for use in composite actions. Default is false
+    default: false
 outputs:
   total_attempts:
     description: The final number of attempts made

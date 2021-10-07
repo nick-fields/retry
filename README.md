@@ -44,6 +44,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Command to run before a retry (such as a cleanup script). Any error thrown from retry command is caught and surfaced as a warning.
 
+### `continue_on_error`
+
+**Optional** Exit successfully even if an error occurs. Same as native continue-on-error behavior, but for use in composite actions. Defaults to `false`
+
 ## Outputs
 
 ### `total_attempts`
@@ -113,7 +117,29 @@ with:
   command: npm run some-typically-fast-script
 ```
 
-### Retry but allow failure and do something with output
+### Retry using continue_on_error input (in composite action) but allow failure and do something with output
+
+```yaml
+- uses: nick-invision/retry@v2
+  id: retry
+  with:
+    timeout_seconds: 15
+    max_attempts: 3
+    continue-on-error: true
+    command: node -e 'process.exit(99);'
+- name: Assert that step succeeded (despite failing command)
+  uses: nick-invision/assert-action@v1
+  with:
+    expected: success
+    actual: ${{ steps.retry.outcome }}
+- name: Assert that action exited with expected exit code
+  uses: nick-invision/assert-action@v1
+  with:
+    expected: 99
+    actual: ${{ steps.retry.outputs.exit_code }}
+```
+
+### Retry using continue-on-error built-in command (in workflow action) but allow failure and do something with output
 
 ```yaml
 - uses: nick-invision/retry@v2

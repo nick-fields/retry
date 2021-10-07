@@ -16,6 +16,7 @@ const POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', fals
 const RETRY_ON = getInput('retry_on') || 'any';
 const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
 const ON_RETRY_COMMAND = getInput('on_retry_command');
+const CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
 
 const OS = process.platform;
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
@@ -39,6 +40,15 @@ function getInputNumber(id: string, required: boolean): number | undefined {
   }
 
   return num;
+}
+
+function getInputBoolean(id: string): Boolean {
+  const input = getInput(id);
+
+  if (!['true','false'].includes(input.toLowerCase())) {
+    throw `Input ${id} only accepts boolean values.  Received ${input}`;
+  }
+  return input.toLowerCase() === 'true'
 }
 
 async function retryWait() {
@@ -195,12 +205,20 @@ runAction()
     process.exit(0); // success
   })
   .catch((err) => {
-    error(err.message);
+    // exact error code if available, otherwise just 1
+    const exitCode = exit > 0 ? exit : 1;
+
+    if (CONTINUE_ON_ERROR) {
+      warning(err.message);
+    } else {
+      error(err.message);
+    }
 
     // these can be  helpful to know if continue-on-error is true
     setOutput(OUTPUT_EXIT_ERROR_KEY, err.message);
-    setOutput(OUTPUT_EXIT_CODE_KEY, exit > 0 ? exit : 1);
+    setOutput(OUTPUT_EXIT_CODE_KEY, exitCode);
 
-    // exit with exact error code if available, otherwise just exit with 1
-    process.exit(exit > 0 ? exit : 1);
+    // if continue_on_error, exit with exact error code else exit gracefully
+    // mimics native continue-on-error that is not supported in composite actions
+    process.exit(CONTINUE_ON_ERROR ? 0 : exitCode);
   });

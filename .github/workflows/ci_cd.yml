@@ -97,6 +97,41 @@ jobs:
           expected: failure
           actual: ${{ steps.sad_path_error.outcome }}
 
+      - name: happy-path (continue_on_error)
+        id: happy_path_continue_on_error
+        uses: ./
+        with:
+          command: node -e "process.exit(0)"
+          timeout_minutes: 1
+          continue_on_error: true
+      - name: sad-path (continue_on_error)
+        id: sad_path_continue_on_error
+        uses: ./
+        with:
+          command: node -e "process.exit(33)"
+          timeout_minutes: 1
+          continue_on_error: true
+      - name: Verify continue_on_error returns correct exit code on success
+        uses: nick-invision/assert-action@v1
+        with:
+          expected: 0
+          actual: ${{ steps.happy_path_continue_on_error.outputs.exit_code }}
+      - name: Verify continue_on_error exits with correct outcome on success
+        uses: nick-invision/assert-action@v1
+        with:
+          expected: success
+          actual: ${{ steps.happy_path_continue_on_error.outcome }}
+      - name: Verify continue_on_error returns correct exit code on error
+        uses: nick-invision/assert-action@v1
+        with:
+          expected: 33
+          actual: ${{ steps.sad_path_continue_on_error.outputs.exit_code }}
+      - name: Verify continue_on_error exits with successful outcome when an error occurs
+        uses: nick-invision/assert-action@v1
+        with:
+          expected: success
+          actual: ${{ steps.sad_path_continue_on_error.outcome }}
+
       - name: retry_on (timeout) fails early if error encountered
         id: retry_on_timeout_fail
         uses: ./
