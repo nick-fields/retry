@@ -125,7 +125,7 @@ with:
   with:
     timeout_seconds: 15
     max_attempts: 3
-    continue-on-error: true
+    continue_on_error: true
     command: node -e 'process.exit(99);'
 - name: Assert that step succeeded (despite failing command)
   uses: nick-invision/assert-action@v1
