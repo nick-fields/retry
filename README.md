@@ -44,6 +44,10 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Command to run before a retry (such as a cleanup script). Any error thrown from retry command is caught and surfaced as a warning.
 
+### `new_command_on_retry`
+
+**Optional** Command to run if the first attempt fails. This command will be called on all subsequent attempts. 
+
 ### `continue_on_error`
 
 **Optional** Exit successfully even if an error occurs. Same as native continue-on-error behavior, but for use in composite actions. Defaults to `false`
@@ -177,6 +181,17 @@ with:
   max_attempts: 3
   command: npm run some-flaky-script-that-outputs-something
   on_retry_command: npm run cleanup-flaky-script-output
+```
+
+### Run different command after first failure
+
+```yaml
+uses: nick-invision/retry@v2
+with:
+  timeout_seconds: 15
+  max_attempts: 3
+  command: npx jest
+  new_command_on_retry: npx jest --onlyFailures 
 ```
 
 ### Run multi-line, multi-command script

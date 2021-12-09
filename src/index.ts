@@ -17,6 +17,7 @@ const RETRY_ON = getInput('retry_on') || 'any';
 const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
 const ON_RETRY_COMMAND = getInput('on_retry_command');
 const CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
+const NEW_COMMAND_ON_RETRY = getInput('new_command_on_retry');
 
 const OS = process.platform;
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
@@ -122,7 +123,7 @@ async function runRetryCmd(): Promise<void> {
   }
 }
 
-async function runCmd() {
+async function runCmd(attempt: number) {
   const end_time = Date.now() + getTimeout();
   const executable = getExecutable();
 
@@ -130,7 +131,9 @@ async function runCmd() {
   done = false;
 
   debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`)
-  var child = exec(COMMAND, { 'shell': executable });
+  var child = attempt > 1 && NEW_COMMAND_ON_RETRY
+      ? exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
+      : exec(COMMAND, { 'shell': executable });
 
   child.stdout?.on('data', (data) => {
     process.stdout.write(data);
@@ -175,7 +178,7 @@ async function runAction() {
     try {
       // just keep overwriting attempts output
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-      await runCmd();
+      await runCmd(attempt);
       info(`Command completed after ${attempt} attempt(s).`);
       break;
     } catch (error) {
