@@ -36,6 +36,9 @@ inputs:
   continue_on_error:
     description: Exits successfully even if an error occurs.  Same as native continue-on-error behavior, but for use in composite actions. Default is false
     default: false
+  new_command_on_retry:
+    description: Command to run if the first attempt fails. This command will be called on all subsequent attempts.
+    required: false
 outputs:
   total_attempts:
     description: The final number of attempts made

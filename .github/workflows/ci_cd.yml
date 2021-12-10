@@ -60,6 +60,15 @@ jobs:
           actual: ${{ steps.sad_path_wait_sec.outputs.exit_error }}
           comparison: contains
 
+      - name: new-command-on-retry
+        id: new-command-on-retry
+        uses: ./
+        with:
+          timeout_minutes: 1
+          max_attempts: 3
+          command: node -e "process.exit(1)"
+          new_command_on_retry: node -e "console.log('this is the new command on retry')"
+
       - name: on-retry-cmd
         id: on-retry-cmd
         uses: ./
