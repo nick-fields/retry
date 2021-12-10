@@ -46,7 +46,7 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `new_command_on_retry`
 
-**Optional** Command to run if the first attempt fails. This command will be called on all subsequent attempts. 
+**Optional** Command to run if the first attempt fails. This command will be called on all subsequent attempts.
 
 ### `continue_on_error`
 
@@ -191,7 +191,7 @@ with:
   timeout_seconds: 15
   max_attempts: 3
   command: npx jest
-  new_command_on_retry: npx jest --onlyFailures 
+  new_command_on_retry: npx jest --onlyFailures
 ```
 
 ### Run multi-line, multi-command script

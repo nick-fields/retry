@@ -288,6 +288,7 @@ var RETRY_ON = core_1.getInput('retry_on') || 'any';
 var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
 var ON_RETRY_COMMAND = core_1.getInput('on_retry_command');
 var CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
+var NEW_COMMAND_ON_RETRY = core_1.getInput('new_command_on_retry');
 var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
@@ -408,7 +409,7 @@ function runRetryCmd() {
         });
     });
 }
-function runCmd() {
+function runCmd(attempt) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var end_time, executable, child;
@@ -420,7 +421,9 @@ function runCmd() {
                     exit = 0;
                     done = false;
                     core_1.debug("Running command " + COMMAND + " on " + OS + " using shell " + executable);
-                    child = child_process_1.exec(COMMAND, { 'shell': executable });
+                    child = attempt > 1 && NEW_COMMAND_ON_RETRY
+                        ? child_process_1.exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
+                        : child_process_1.exec(COMMAND, { 'shell': executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
@@ -482,7 +485,7 @@ function runAction() {
                     _a.trys.push([3, 5, , 11]);
                     // just keep overwriting attempts output
                     core_1.setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-                    return [4 /*yield*/, runCmd()];
+                    return [4 /*yield*/, runCmd(attempt)];
                 case 4:
                     _a.sent();
                     core_1.info("Command completed after " + attempt + " attempt(s).");
