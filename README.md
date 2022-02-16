@@ -2,6 +2,10 @@
 
 Retries an Action step on failure or timeout. This is currently intended to replace the `run` step for moody commands.
 
+**NOTE:** Ownership of this project was transferred to my personal account `nick-fields` from my work account `nick-invision`.  Details [here](#Ownership)
+
+---
+
 ## Inputs
 
 ### `timeout_minutes`
@@ -71,7 +75,7 @@ The final error returned by the command
 ### Shell
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_minutes: 10
   max_attempts: 3
@@ -82,7 +86,7 @@ with:
 ### Timeout in minutes
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_minutes: 10
   max_attempts: 3
@@ -92,7 +96,7 @@ with:
 ### Timeout in seconds
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -102,7 +106,7 @@ with:
 ### Only retry after timeout
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -113,7 +117,7 @@ with:
 ### Only retry after error
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -124,7 +128,7 @@ with:
 ### Retry using continue_on_error input (in composite action) but allow failure and do something with output
 
 ```yaml
-- uses: nick-invision/retry@v2
+- uses: nick-fields/retry@v2
   id: retry
   with:
     timeout_seconds: 15
@@ -132,12 +136,12 @@ with:
     continue_on_error: true
     command: node -e 'process.exit(99);'
 - name: Assert that step succeeded (despite failing command)
-  uses: nick-invision/assert-action@v1
+  uses: nick-fields/assert-action@v1
   with:
     expected: success
     actual: ${{ steps.retry.outcome }}
 - name: Assert that action exited with expected exit code
-  uses: nick-invision/assert-action@v1
+  uses: nick-fields/assert-action@v1
   with:
     expected: 99
     actual: ${{ steps.retry.outputs.exit_code }}
@@ -146,7 +150,7 @@ with:
 ### Retry using continue-on-error built-in command (in workflow action) but allow failure and do something with output
 
 ```yaml
-- uses: nick-invision/retry@v2
+- uses: nick-fields/retry@v2
   id: retry
   # see https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
   continue-on-error: true
@@ -156,17 +160,17 @@ with:
     retry_on: error
     command: node -e 'process.exit(99);'
 - name: Assert that action failed
-  uses: nick-invision/assert-action@v1
+  uses: nick-fields/assert-action@v1
   with:
     expected: failure
     actual: ${{ steps.retry.outcome }}
 - name: Assert that action exited with expected exit code
-  uses: nick-invision/assert-action@v1
+  uses: nick-fields/assert-action@v1
   with:
     expected: 99
     actual: ${{ steps.retry.outputs.exit_code }}
 - name: Assert that action made expected number of attempts
-  uses: nick-invision/assert-action@v1
+  uses: nick-fields/assert-action@v1
   with:
     expected: 3
     actual: ${{ steps.retry.outputs.total_attempts }}
@@ -175,7 +179,7 @@ with:
 ### Run script after failure but before retry
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -186,7 +190,7 @@ with:
 ### Run different command after first failure
 
 ```yaml
-uses: nick-invision/retry@v2
+uses: nick-fields/retry@v2
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -224,3 +228,11 @@ with:
 ## Requirements
 
 NodeJS is required for this action to run. This runs without issue on all GitHub hosted runners but if you are running into issues with this on self hosted runners ensure NodeJS is installed.
+
+---
+
+## **Ownership**
+
+As of 2022/02/15 ownership of this project has been transferred to my personal account `nick-fields` from my work account `nick-invision` due to me leaving InVision.  I am the author and have been the primary maintainer since day one and will continue to maintain this as needed.
+
+No immediate action is required if you rely on this as GitHub handles ownership transfers pretty well. Any current workflow reference to `nick-invision/retry@<whatever>` will still work, but will just pull from `nick-fields/retry@<whatever>` instead.  Who knows how long that will work, so at some point it would be beneficial to update your workflows to reflect the new owner accordingly.
