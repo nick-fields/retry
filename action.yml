@@ -39,6 +39,9 @@ inputs:
   new_command_on_retry:
     description: Command to run if the first attempt fails. This command will be called on all subsequent attempts.
     required: false
+  retry_on_exit_code:
+    description: Specific exit code to retry on. This will only retry for the given error code and fail immediately other error codes.
+    required: false
 outputs:
   total_attempts:
     description: The final number of attempts made

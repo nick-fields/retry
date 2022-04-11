@@ -289,6 +289,7 @@ var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'tr
 var ON_RETRY_COMMAND = core_1.getInput('on_retry_command');
 var CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
 var NEW_COMMAND_ON_RETRY = core_1.getInput('new_command_on_retry');
+var RETRY_ON_EXIT_CODE = getInputNumber('retry_on_exit_code', false);
 var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
@@ -499,7 +500,8 @@ function runAction() {
                     // error: timeout
                     throw error_2;
                 case 7:
-                    if (!(exit > 0 && RETRY_ON === 'timeout')) return [3 /*break*/, 8];
+                    if (!(((RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit) || exit > 0) &&
+                        RETRY_ON === 'timeout')) return [3 /*break*/, 8];
                     // error: error
                     throw error_2;
                 case 8: return [4 /*yield*/, runRetryCmd()];
