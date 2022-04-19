@@ -87,6 +87,14 @@ jobs:
           retry_on_exit_code: 2
           max_attempts: 3
           command: node -e "process.exit(2)"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: failure
+          actual: ${{ steps.retry_on_exit_code_expected.outcome }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 3
+          actual: ${{ steps.retry_on_exit_code_expected.outputs.total_attempts }}
 
       - name: retry_on_exit_code (with unexpected error code)
         id: retry_on_exit_code_unexpected
@@ -97,6 +105,14 @@ jobs:
           retry_on_exit_code: 2
           max_attempts: 3
           command: node -e "process.exit(1)"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: failure
+          actual: ${{ steps.retry_on_exit_code_unexpected.outcome }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 1
+          actual: ${{ steps.retry_on_exit_code_unexpected.outputs.total_attempts }}
 
       - name: on-retry-cmd (on-retry fails)
         id: on-retry-cmd-fails
