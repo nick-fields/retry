@@ -1,8 +1,7 @@
 name: CI/CD
 on:
   push:
-    branches:
-      - '**'
+
 jobs:
   # runs on branch pushes only
   ci:
