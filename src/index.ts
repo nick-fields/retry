@@ -18,6 +18,7 @@ const WARNING_ON_RETRY = getInput('warning_on_retry').toLowerCase() === 'true';
 const ON_RETRY_COMMAND = getInput('on_retry_command');
 const CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
 const NEW_COMMAND_ON_RETRY = getInput('new_command_on_retry');
+const RETRY_ON_EXIT_CODE = getInputNumber('retry_on_exit_code', false);
 
 const OS = process.platform;
 const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
@@ -186,6 +187,8 @@ async function runAction() {
         throw new Error(`Final attempt failed. ${error.message}`);
       } else if (!done && RETRY_ON === 'error') {
         // error: timeout
+        throw error;
+      } else if (RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit){
         throw error;
       } else if (exit > 0 && RETRY_ON === 'timeout') {
         // error: error
