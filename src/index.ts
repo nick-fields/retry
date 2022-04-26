@@ -188,10 +188,9 @@ async function runAction() {
       } else if (!done && RETRY_ON === 'error') {
         // error: timeout
         throw error;
-      } else if (
-        ((RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit) || exit > 0) &&
-        RETRY_ON === 'timeout'
-      ) {
+      } else if (RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit){
+        throw error;
+      } else if (exit > 0 && RETRY_ON === 'timeout') {
         // error: error
         throw error;
       } else {
