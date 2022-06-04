@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/nick-invision/retry#readme",
   "dependencies": {
-    "@actions/core": "^1.5.0",
+    "@actions/core": "^1.8.2",
     "milliseconds": "^1.0.3",
     "tree-kill": "^1.2.2"
   },
