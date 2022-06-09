@@ -357,7 +357,10 @@ function getExecutable() {
     }
     var executable;
     switch (SHELL) {
-        case "bash":
+        case "bash": {
+            executable = SHELL + "-e";
+            break;
+        }
         case "python":
         case "pwsh": {
             executable = SHELL;
