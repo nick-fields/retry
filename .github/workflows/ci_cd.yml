@@ -43,7 +43,7 @@ jobs:
           max_attempts: 2
           command: |
             i-do-not-exist && \
-            echo "bar"
+            echo "i-exist"
       - uses: nick-invision/assert-action@v1
         with:
           expected: 3
