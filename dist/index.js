@@ -708,11 +708,15 @@ function getTimeout() {
 }
 function getExecutable() {
     if (!SHELL) {
-        return OS === 'win32' ? 'powershell' : 'bash';
+        return OS === 'win32' ? 'powershell' : 'bash -e';
     }
     var executable;
     switch (SHELL) {
-        case "bash":
+        case "bash": {
+            // -e to not ignore errors, but exit with non-zero code.
+            executable = "bash -e";
+            break;
+        }
         case "python":
         case "pwsh": {
             executable = SHELL;
@@ -776,7 +780,7 @@ function runCmd(attempt) {
                     executable = getExecutable();
                     exit = 0;
                     done = false;
-                    core_1.debug("Running command " + COMMAND + " on " + OS + " using shell " + executable);
+                    core_1.debug("Running command " + COMMAND + " on " + OS + " using shell \"" + executable + "\"");
                     child = attempt > 1 && NEW_COMMAND_ON_RETRY
                         ? child_process_1.exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
                         : child_process_1.exec(COMMAND, { 'shell': executable });
