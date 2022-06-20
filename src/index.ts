@@ -83,7 +83,11 @@ function getExecutable(): string {
 
   let executable: string;
   switch (SHELL) {
-    case "bash":
+    case "bash": {
+      // -e to not ignore errors, but exit with non-zero code.
+      executable = SHELL + "-e";
+      break;
+    }
     case "python":
     case "pwsh": {
       executable = SHELL;
