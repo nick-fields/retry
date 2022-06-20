@@ -1,0 +1,13 @@
+name: 'Setup tests'
+description: 'Sets up tests to be run in a workflow'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16
+    - name: Install dependencies
+      run: npm ci
