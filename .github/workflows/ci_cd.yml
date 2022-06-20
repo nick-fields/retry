@@ -407,6 +407,114 @@ jobs:
           expected: failure
           actual: ${{ steps.wrong_shell.outcome }}
 
+  ci_multiline_tests:
+    name: Run Tests (Multiline)
+    if: startsWith(github.ref, 'refs/heads')
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Multi-line 2 commands non existent first command
+        id: multi_line_2_commands_non_existent_first_command
+        uses: ./
+        continue-on-error: true
+        with:
+          shell: bash
+          timeout_seconds: 1
+          max_attempts: 2
+          command: |
+            i-do-not-exist && \
+            echo "i-exist"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 2
+          actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.total_attempts }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'Final attempt failed'
+          actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_error }}
+          comparison: contains
+      - uses: nick-invision/assert-action@v1
+        with:
+          # The 127 error code indicates “command not found”.
+          expected: '127'
+          actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_code }}
+          comparison: contains
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'i-exist'
+          actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_error }}
+          comparison: notContains
+
+      - name: Multi-line 2 commands happy path test
+        id: multi_line_2_commands_happy_path
+        uses: ./
+        with:
+          shell: bash
+          timeout_seconds: 1
+          max_attempts: 2
+          command: |
+            echo "foo" && \
+            echo "bar"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 1
+          actual: ${{ steps.multi_line_2_commands_happy_path.outputs.total_attempts }}
+
+      - name: Conventional multi-line non existent first command
+        id: conventional_multi_line_non_existent_first_command
+        uses: ./
+        continue-on-error: true
+        with:
+          shell: bash
+          timeout_seconds: 1
+          max_attempts: 2
+          command: |
+            i-do-not-exist
+            echo "i-exist"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 2
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.total_attempts }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'Final attempt failed'
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_error }}
+          comparison: contains
+      - uses: nick-invision/assert-action@v1
+        with:
+          # The 127 error code indicates “command not found”.
+          expected: '127'
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_code }}
+          comparison: contains
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'i-exist'
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_error }}
+          comparison: notContains
+
+      - name: Conventional multi-line happy path test
+        id: conventional_multi_line_happy_path
+        uses: ./
+        with:
+          shell: bash
+          timeout_seconds: 1
+          max_attempts: 2
+          command: |
+            echo "foo"
+            echo "bar"
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 1
+          actual: ${{ steps.conventional_multi_line_happy_path.outputs.total_attempts }}
+
   ci_windows:
     name: Run Windows Tests
     if: startsWith(github.ref, 'refs/heads')
