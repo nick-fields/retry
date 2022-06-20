@@ -36,11 +36,12 @@ jobs:
           command: node ./.github/scripts/log-examples.js
           timeout_minutes: 1
 
-      - name: multi-line 2 commands non existent first command
+      - name: Multi-line 2 commands non existent first command
         id: multi_line_2_commands_non_existent_first_command
         uses: ./
         continue-on-error: true
         with:
+          shell: bash
           timeout_seconds: 1
           max_attempts: 2
           command: |
@@ -52,9 +53,14 @@ jobs:
           actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
-          # The 127 error code indicates “command not found”.
-          expected: 'error code 127'
+          expected: 'Final attempt failed'
           actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_error }}
+          comparison: contains
+      - uses: nick-invision/assert-action@v1
+        with:
+          # The 127 error code indicates “command not found”.
+          expected: '127'
+          actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_code }}
           comparison: contains
       - uses: nick-invision/assert-action@v1
         with:
@@ -62,10 +68,11 @@ jobs:
           actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_error }}
           comparison: notContains
 
-      - name: multi-line 2 commands happy path test
+      - name: Multi-line 2 commands happy path test
         id: multi_line_2_commands_happy_path
         uses: ./
         with:
+          shell: bash
           timeout_seconds: 1
           max_attempts: 2
           command: |
@@ -81,6 +88,7 @@ jobs:
         uses: ./
         continue-on-error: true
         with:
+          shell: bash
           timeout_seconds: 1
           max_attempts: 2
           command: |
@@ -89,12 +97,17 @@ jobs:
       - uses: nick-invision/assert-action@v1
         with:
           expected: 2
-          actual: ${{ steps.conventional_multi_line_non_existent_second_command.outputs.total_attempts }}
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.total_attempts }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 'Final attempt failed'
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_error }}
+          comparison: contains
       - uses: nick-invision/assert-action@v1
         with:
           # The 127 error code indicates “command not found”.
-          expected: 'error code 127'
-          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_error }}
+          expected: '127'
+          actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_code }}
           comparison: contains
       - uses: nick-invision/assert-action@v1
         with:
@@ -106,6 +119,7 @@ jobs:
         id: conventional_multi_line_happy_path
         uses: ./
         with:
+          shell: bash
           timeout_seconds: 1
           max_attempts: 2
           command: |
