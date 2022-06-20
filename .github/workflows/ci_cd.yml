@@ -9,6 +9,8 @@ jobs:
     if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-18.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - uses: ./.github/composite/setup-tests
 
       - name: happy-path
