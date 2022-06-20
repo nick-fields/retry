@@ -39,18 +39,21 @@ jobs:
       - name: multi-line 2 commands non existent first command
         id: multi_line_2_commands_non_existent_first_command
         uses: ./
+        continue-on-error: true
         with:
+          timeout_seconds: 1
           max_attempts: 2
           command: |
             i-do-not-exist && \
             echo "i-exist"
       - uses: nick-invision/assert-action@v1
         with:
-          expected: 3
+          expected: 2
           actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
-          expected: 'i-do-not-exist'
+          # The 127 error code indicates “command not found”.
+          expected: 'error code 127'
           actual: ${{ steps.multi_line_2_commands_non_existent_first_command.outputs.exit_error }}
           comparison: contains
       - uses: nick-invision/assert-action@v1
@@ -63,6 +66,7 @@ jobs:
         id: multi_line_2_commands_happy_path
         uses: ./
         with:
+          timeout_seconds: 1
           max_attempts: 2
           command: |
             echo "foo" && \
@@ -75,18 +79,21 @@ jobs:
       - name: Conventional multi-line non existent first command
         id: conventional_multi_line_non_existent_first_command
         uses: ./
+        continue-on-error: true
         with:
+          timeout_seconds: 1
           max_attempts: 2
           command: |
             i-do-not-exist
             echo "i-exist"
       - uses: nick-invision/assert-action@v1
         with:
-          expected: 3
+          expected: 2
           actual: ${{ steps.conventional_multi_line_non_existent_second_command.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
-          expected: 'i-do-not-exist'
+          # The 127 error code indicates “command not found”.
+          expected: 'error code 127'
           actual: ${{ steps.conventional_multi_line_non_existent_first_command.outputs.exit_error }}
           comparison: contains
       - uses: nick-invision/assert-action@v1
@@ -99,13 +106,14 @@ jobs:
         id: conventional_multi_line_happy_path
         uses: ./
         with:
+          timeout_seconds: 1
           max_attempts: 2
           command: |
             echo "foo"
             echo "bar"
       - uses: nick-invision/assert-action@v1
         with:
-          expected: 0
+          expected: 1
           actual: ${{ steps.conventional_multi_line_happy_path.outputs.total_attempts }}
 
       - name: sad-path (retry_wait_seconds)
