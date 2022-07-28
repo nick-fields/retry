@@ -181,7 +181,9 @@ async function runAction() {
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
       await runCmd(attempt);
       info(`Command completed after ${attempt} attempt(s).`);
-      break;
+      if !(RETRY_ON === 'success') {
+        break;
+      }
     } catch (error) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
