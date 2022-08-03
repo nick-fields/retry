@@ -4,10 +4,30 @@ on:
 
 jobs:
   # runs on branch pushes only
+  ci_unuit:
+    name: Run Unit Tests
+    if: startsWith(github.ref, 'refs/heads')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Unit Tests
+        run: npm test
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage/
+          verbose: true
+
   ci_integration:
     name: Run Integration Tests
     if: startsWith(github.ref, 'refs/heads')
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -242,7 +262,7 @@ jobs:
   ci_integration_timeout:
     name: Run Integration Timeout Tests
     if: startsWith(github.ref, 'refs/heads')
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -384,7 +404,7 @@ jobs:
     name: Publish Action
     needs: [ci_integration, ci_integration_timeout, ci_windows]
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2

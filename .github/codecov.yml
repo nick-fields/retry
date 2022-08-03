@@ -1,0 +1,7 @@
+# see https://docs.codecov.com/docs/codecovyml-reference
+codecov:
+  require_ci_to_pass: false
+comment:
+  layout: 'diff, flags'
+  behavior: default
+  require_changes: true
