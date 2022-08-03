@@ -712,25 +712,25 @@ function getExecutable() {
     }
     var executable;
     switch (SHELL) {
-        case "bash":
-        case "python":
-        case "pwsh": {
+        case 'bash':
+        case 'python':
+        case 'pwsh': {
             executable = SHELL;
             break;
         }
-        case "sh": {
+        case 'sh': {
             if (OS === 'win32') {
                 throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
             }
             executable = SHELL;
             break;
         }
-        case "cmd":
-        case "powershell": {
+        case 'cmd':
+        case 'powershell': {
             if (OS !== 'win32') {
                 throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
             }
-            executable = SHELL + ".exe";
+            executable = SHELL + '.exe';
             break;
         }
         default: {
@@ -778,8 +778,8 @@ function runCmd(attempt) {
                     done = false;
                     (0, core_1.debug)("Running command ".concat(COMMAND, " on ").concat(OS, " using shell ").concat(executable));
                     child = attempt > 1 && NEW_COMMAND_ON_RETRY
-                        ? (0, child_process_1.exec)(NEW_COMMAND_ON_RETRY, { 'shell': executable })
-                        : (0, child_process_1.exec)(COMMAND, { 'shell': executable });
+                        ? (0, child_process_1.exec)(NEW_COMMAND_ON_RETRY, { shell: executable })
+                        : (0, child_process_1.exec)(COMMAND, { shell: executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
