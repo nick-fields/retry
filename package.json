@@ -4,7 +4,7 @@
   "description": "Retries a GitHub Action step on failure or timeout.",
   "scripts": {
     "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
-    "prepare": "ncc build src/index.ts",
+    "prepare": "ncc build src/index.ts && husky install",
     "style": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ."
   },
   "repository": {
@@ -32,16 +32,16 @@
     "@types/node": "^16.11.7",
     "@zeit/ncc": "^0.20.5",
     "dotenv": "8.2.0",
-    "husky": "^4.3.8",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "semantic-release": "19.0.3",
     "ts-node": "9.0.0",
     "typescript": "^4.7.4"
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint --config ./.config/.commitlintrc.js -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm run prepare && git add ."
-    }
+  "lint-staged": {
+    "**/*.{js,md,ts,yaml,yml}": [
+      "yarn prettier --write"
+    ]
   }
 }
