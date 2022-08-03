@@ -40,7 +40,7 @@
   },
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "commit-msg": "commitlint --config ./.config/.commitlintrc.js -E HUSKY_GIT_PARAMS",
       "pre-commit": "npm run prepare && git add ."
     }
   }
