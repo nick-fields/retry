@@ -47,10 +47,10 @@ function getInputNumber(id: string, required: boolean): number | undefined {
 function getInputBoolean(id: string): Boolean {
   const input = getInput(id);
 
-  if (!['true','false'].includes(input.toLowerCase())) {
+  if (!['true', 'false'].includes(input.toLowerCase())) {
     throw `Input ${id} only accepts boolean values.  Received ${input}`;
   }
-  return input.toLowerCase() === 'true'
+  return input.toLowerCase() === 'true';
 }
 
 async function retryWait() {
@@ -83,32 +83,34 @@ function getExecutable(): string {
 
   let executable: string;
   switch (SHELL) {
-    case "bash":
-    case "python":
-    case "pwsh": {
+    case 'bash':
+    case 'python':
+    case 'pwsh': {
       executable = SHELL;
       break;
     }
-    case "sh": {
+    case 'sh': {
       if (OS === 'win32') {
         throw new Error(`Shell ${SHELL} not allowed on OS ${OS}`);
       }
       executable = SHELL;
       break;
     }
-    case "cmd":
-    case "powershell": {
+    case 'cmd':
+    case 'powershell': {
       if (OS !== 'win32') {
         throw new Error(`Shell ${SHELL} not allowed on OS ${OS}`);
       }
-      executable = SHELL + ".exe";
+      executable = SHELL + '.exe';
       break;
     }
     default: {
-      throw new Error(`Shell ${SHELL} not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells`);
+      throw new Error(
+        `Shell ${SHELL} not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells`
+      );
     }
   }
-  return executable
+  return executable;
 }
 
 async function runRetryCmd(): Promise<void> {
@@ -120,7 +122,7 @@ async function runRetryCmd(): Promise<void> {
   try {
     await execSync(ON_RETRY_COMMAND, { stdio: 'inherit' });
   } catch (error: any) {
-    info(`WARNING: Retry command threw the error ${error.message}`)
+    info(`WARNING: Retry command threw the error ${error.message}`);
   }
 }
 
@@ -131,10 +133,11 @@ async function runCmd(attempt: number) {
   exit = 0;
   done = false;
 
-  debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`)
-  var child = attempt > 1 && NEW_COMMAND_ON_RETRY
-      ? exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
-      : exec(COMMAND, { 'shell': executable });
+  debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`);
+  var child =
+    attempt > 1 && NEW_COMMAND_ON_RETRY
+      ? exec(NEW_COMMAND_ON_RETRY, { shell: executable })
+      : exec(COMMAND, { shell: executable });
 
   child.stdout?.on('data', (data) => {
     process.stdout.write(data);
@@ -188,7 +191,7 @@ async function runAction() {
       } else if (!done && RETRY_ON === 'error') {
         // error: timeout
         throw error;
-      } else if (RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit){
+      } else if (RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit) {
         throw error;
       } else if (exit > 0 && RETRY_ON === 'timeout') {
         // error: error
