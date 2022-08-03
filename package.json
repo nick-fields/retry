@@ -8,7 +8,8 @@
     "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
     "prepare": "ncc build src/index.ts && husky install",
     "style:base": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ",
-    "style": "npm run style:base -- ."
+    "style": "npm run style:base -- .",
+    "test": "jest -c ./.config/jest.config.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "@commitlint/config-conventional": "^16.2.1",
     "@semantic-release/changelog": "^6.0.1",
     "@semantic-release/git": "^10.0.1",
+    "@types/jest": "^28.1.6",
     "@types/milliseconds": "0.0.30",
     "@types/node": "^16.11.7",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
@@ -40,9 +42,11 @@
     "eslint": "^8.21.0",
     "eslint-config-prettier": "^8.5.0",
     "husky": "^8.0.1",
+    "jest": "^28.1.3",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "semantic-release": "19.0.3",
+    "ts-jest": "^28.0.7",
     "ts-node": "9.0.0",
     "typescript": "^4.7.4",
     "yaml-lint": "^1.7.0"
