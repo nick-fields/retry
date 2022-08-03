@@ -238,6 +238,7 @@ jobs:
           expected: failure
           actual: ${{ steps.wrong_shell.outcome }}
 
+  # timeout tests take longer to run so run in parallel
   ci_integration_timeout:
     name: Run Integration Timeout Tests
     if: startsWith(github.ref, 'refs/heads')
@@ -252,7 +253,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # timeout tests (takes longer to run so run last)
       - name: sad-path (timeout)
         id: sad_path_timeout
         uses: ./
