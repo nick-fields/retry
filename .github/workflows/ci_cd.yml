@@ -382,7 +382,7 @@ jobs:
   # runs on push to master only
   cd:
     name: Publish Action
-    needs: ci
+    needs: [ci_integration, ci_integration_timeout, ci_windows]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-18.04
     steps:
