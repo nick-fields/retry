@@ -708,11 +708,14 @@ function getTimeout() {
 }
 function getExecutable() {
     if (!SHELL) {
-        return OS === 'win32' ? 'powershell' : 'bash';
+        return OS === 'win32' ? 'powershell' : 'bash -e ';
     }
     var executable;
     switch (SHELL) {
-        case "bash":
+        case "bash": {
+            executable = "bash -e ";
+            break;
+        }
         case "python":
         case "pwsh": {
             executable = SHELL;

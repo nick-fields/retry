@@ -78,12 +78,16 @@ function getTimeout(): number {
 
 function getExecutable(): string {
   if (!SHELL) {
-    return OS === 'win32' ? 'powershell' : 'bash';
+    return OS === 'win32' ? 'powershell' : 'bash -e';
   }
 
   let executable: string;
   switch (SHELL) {
-    case "bash":
+    case "bash": {
+      // -e to not ignore errors, but exit with non-zero code.
+      executable = "bash -e";
+      break;
+    }
     case "python":
     case "pwsh": {
       executable = SHELL;
@@ -131,7 +135,7 @@ async function runCmd(attempt: number) {
   exit = 0;
   done = false;
 
-  debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`)
+  debug(`Running command ${COMMAND} on ${OS} using shell "${executable}"`)
   var child = attempt > 1 && NEW_COMMAND_ON_RETRY
       ? exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
       : exec(COMMAND, { 'shell': executable });
