@@ -4,8 +4,8 @@ on:
 
 jobs:
   # runs on branch pushes only
-  ci:
-    name: Run Tests
+  ci_integration:
+    name: Run Integration Tests
     if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-18.04
     steps:
@@ -220,7 +220,39 @@ jobs:
           expected: 2
           actual: ${{ steps.retry_on_error.outputs.exit_code }}
 
-        # timeout tests (takes longer to run so run last)
+      - name: sad-path (wrong shell for OS)
+        id: wrong_shell
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_minutes: 1
+          max_attempts: 2
+          shell: cmd
+          command: 'dir'
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 2
+          actual: ${{ steps.wrong_shell.outputs.total_attempts }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: failure
+          actual: ${{ steps.wrong_shell.outcome }}
+
+  ci_integration_timeout:
+    name: Run Integration Timeout Tests
+    if: startsWith(github.ref, 'refs/heads')
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: npm ci
+
+      # timeout tests (takes longer to run so run last)
       - name: sad-path (timeout)
         id: sad_path_timeout
         uses: ./
@@ -294,24 +326,6 @@ jobs:
         with:
           expected: failure
           actual: ${{ steps.sad_path_timeout.outcome }}
-
-      - name: sad-path (wrong shell for OS)
-        id: wrong_shell
-        uses: ./
-        continue-on-error: true
-        with:
-          timeout_minutes: 1
-          max_attempts: 2
-          shell: cmd
-          command: 'dir'
-      - uses: nick-invision/assert-action@v1
-        with:
-          expected: 2
-          actual: ${{ steps.wrong_shell.outputs.total_attempts }}
-      - uses: nick-invision/assert-action@v1
-        with:
-          expected: failure
-          actual: ${{ steps.wrong_shell.outcome }}
 
   ci_windows:
     name: Run Windows Tests
