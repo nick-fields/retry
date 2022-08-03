@@ -25,8 +25,8 @@ const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 const OUTPUT_EXIT_CODE_KEY = 'exit_code';
 const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 
-var exit: number;
-var done: boolean;
+let exit: number;
+let done: boolean;
 
 function getInputNumber(id: string, required: boolean): number | undefined {
   const input = getInput(id, { required });
@@ -44,7 +44,7 @@ function getInputNumber(id: string, required: boolean): number | undefined {
   return num;
 }
 
-function getInputBoolean(id: string): Boolean {
+function getInputBoolean(id: string): boolean {
   const input = getInput(id);
 
   if (!['true', 'false'].includes(input.toLowerCase())) {
@@ -121,6 +121,7 @@ async function runRetryCmd(): Promise<void> {
 
   try {
     await execSync(ON_RETRY_COMMAND, { stdio: 'inherit' });
+    // eslint-disable-next-line
   } catch (error: any) {
     info(`WARNING: Retry command threw the error ${error.message}`);
   }
@@ -134,7 +135,7 @@ async function runCmd(attempt: number) {
   done = false;
 
   debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`);
-  var child =
+  const child =
     attempt > 1 && NEW_COMMAND_ON_RETRY
       ? exec(NEW_COMMAND_ON_RETRY, { shell: executable })
       : exec(COMMAND, { shell: executable });
@@ -185,6 +186,7 @@ async function runAction() {
       await runCmd(attempt);
       info(`Command completed after ${attempt} attempt(s).`);
       break;
+      // eslint-disable-next-line
     } catch (error: any) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);

@@ -3,9 +3,12 @@
   "version": "0.0.0-managed-by-semantic-release",
   "description": "Retries a GitHub Action step on failure or timeout.",
   "scripts": {
+    "lint:base": "eslint --config ./.config/.eslintrc.js ",
+    "lint": "npm run lint:base -- .",
     "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
     "prepare": "ncc build src/index.ts && husky install",
-    "style": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ."
+    "style:base": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ",
+    "style": "npm run style:base -- ."
   },
   "repository": {
     "type": "git",
@@ -30,8 +33,12 @@
     "@semantic-release/git": "^10.0.1",
     "@types/milliseconds": "0.0.30",
     "@types/node": "^16.11.7",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
     "@zeit/ncc": "^0.20.5",
     "dotenv": "8.2.0",
+    "eslint": "^8.21.0",
+    "eslint-config-prettier": "^8.5.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
@@ -40,8 +47,12 @@
     "typescript": "^4.7.4"
   },
   "lint-staged": {
-    "**/*.{js,md,ts,yaml,yml}": [
-      "yarn prettier --write"
+    "**/*.ts": [
+      "npm run style:base --",
+      "npm run lint:base --"
+    ],
+    "**/*.{md,yaml,yml}": [
+      "npm run style:base --"
     ]
   }
 }
