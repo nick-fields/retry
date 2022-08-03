@@ -635,15 +635,15 @@ var util_1 = __webpack_require__(322);
 var TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
 var TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
 var MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
-var COMMAND = core_1.getInput('command', { required: true });
+var COMMAND = (0, core_1.getInput)('command', { required: true });
 var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
-var SHELL = core_1.getInput('shell');
+var SHELL = (0, core_1.getInput)('shell');
 var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
-var RETRY_ON = core_1.getInput('retry_on') || 'any';
-var WARNING_ON_RETRY = core_1.getInput('warning_on_retry').toLowerCase() === 'true';
-var ON_RETRY_COMMAND = core_1.getInput('on_retry_command');
+var RETRY_ON = (0, core_1.getInput)('retry_on') || 'any';
+var WARNING_ON_RETRY = (0, core_1.getInput)('warning_on_retry').toLowerCase() === 'true';
+var ON_RETRY_COMMAND = (0, core_1.getInput)('on_retry_command');
 var CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
-var NEW_COMMAND_ON_RETRY = core_1.getInput('new_command_on_retry');
+var NEW_COMMAND_ON_RETRY = (0, core_1.getInput)('new_command_on_retry');
 var RETRY_ON_EXIT_CODE = getInputNumber('retry_on_exit_code', false);
 var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
@@ -652,21 +652,21 @@ var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 var exit;
 var done;
 function getInputNumber(id, required) {
-    var input = core_1.getInput(id, { required: required });
+    var input = (0, core_1.getInput)(id, { required: required });
     var num = Number.parseInt(input);
     // empty is ok
     if (!input && !required) {
         return;
     }
     if (!Number.isInteger(num)) {
-        throw "Input " + id + " only accepts numbers.  Received " + input;
+        throw "Input ".concat(id, " only accepts numbers.  Received ").concat(input);
     }
     return num;
 }
 function getInputBoolean(id) {
-    var input = core_1.getInput(id);
+    var input = (0, core_1.getInput)(id);
     if (!['true', 'false'].includes(input.toLowerCase())) {
-        throw "Input " + id + " only accepts boolean values.  Received " + input;
+        throw "Input ".concat(id, " only accepts boolean values.  Received ").concat(input);
     }
     return input.toLowerCase() === 'true';
 }
@@ -677,11 +677,11 @@ function retryWait() {
             switch (_a.label) {
                 case 0:
                     waitStart = Date.now();
-                    return [4 /*yield*/, util_1.wait(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS))];
+                    return [4 /*yield*/, (0, util_1.wait)(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS))];
                 case 1:
                     _a.sent();
-                    core_1.debug("Waited " + (Date.now() - waitStart) + "ms");
-                    core_1.debug("Configured wait: " + milliseconds_1.default.seconds(RETRY_WAIT_SECONDS) + "ms");
+                    (0, core_1.debug)("Waited ".concat(Date.now() - waitStart, "ms"));
+                    (0, core_1.debug)("Configured wait: ".concat(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS), "ms"));
                     return [2 /*return*/];
             }
         });
@@ -720,7 +720,7 @@ function getExecutable() {
         }
         case "sh": {
             if (OS === 'win32') {
-                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+                throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
             }
             executable = SHELL;
             break;
@@ -728,13 +728,13 @@ function getExecutable() {
         case "cmd":
         case "powershell": {
             if (OS !== 'win32') {
-                throw new Error("Shell " + SHELL + " not allowed on OS " + OS);
+                throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
             }
             executable = SHELL + ".exe";
             break;
         }
         default: {
-            throw new Error("Shell " + SHELL + " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells");
+            throw new Error("Shell ".concat(SHELL, " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells"));
         }
     }
     return executable;
@@ -752,13 +752,13 @@ function runRetryCmd() {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, child_process_1.execSync(ON_RETRY_COMMAND, { stdio: 'inherit' })];
+                    return [4 /*yield*/, (0, child_process_1.execSync)(ON_RETRY_COMMAND, { stdio: 'inherit' })];
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 4];
                 case 3:
                     error_1 = _a.sent();
-                    core_1.info("WARNING: Retry command threw the error " + error_1.message);
+                    (0, core_1.info)("WARNING: Retry command threw the error ".concat(error_1.message));
                     return [3 /*break*/, 4];
                 case 4: return [2 /*return*/];
             }
@@ -776,10 +776,10 @@ function runCmd(attempt) {
                     executable = getExecutable();
                     exit = 0;
                     done = false;
-                    core_1.debug("Running command " + COMMAND + " on " + OS + " using shell " + executable);
+                    (0, core_1.debug)("Running command ".concat(COMMAND, " on ").concat(OS, " using shell ").concat(executable));
                     child = attempt > 1 && NEW_COMMAND_ON_RETRY
-                        ? child_process_1.exec(NEW_COMMAND_ON_RETRY, { 'shell': executable })
-                        : child_process_1.exec(COMMAND, { 'shell': executable });
+                        ? (0, child_process_1.exec)(NEW_COMMAND_ON_RETRY, { 'shell': executable })
+                        : (0, child_process_1.exec)(COMMAND, { 'shell': executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
@@ -787,8 +787,8 @@ function runCmd(attempt) {
                         process.stdout.write(data);
                     });
                     child.on('exit', function (code, signal) {
-                        core_1.debug("Code: " + code);
-                        core_1.debug("Signal: " + signal);
+                        (0, core_1.debug)("Code: ".concat(code));
+                        (0, core_1.debug)("Signal: ".concat(signal));
                         if (code && code > 0) {
                             exit = code;
                         }
@@ -799,7 +799,7 @@ function runCmd(attempt) {
                         done = true;
                     });
                     _c.label = 1;
-                case 1: return [4 /*yield*/, util_1.wait(milliseconds_1.default.seconds(POLLING_INTERVAL_SECONDS))];
+                case 1: return [4 /*yield*/, (0, util_1.wait)(milliseconds_1.default.seconds(POLLING_INTERVAL_SECONDS))];
                 case 2:
                     _c.sent();
                     _c.label = 3;
@@ -807,18 +807,18 @@ function runCmd(attempt) {
                     if (Date.now() < end_time && !done) return [3 /*break*/, 1];
                     _c.label = 4;
                 case 4:
-                    if (!!done) return [3 /*break*/, 6];
-                    tree_kill_1.default(child.pid);
+                    if (!(!done && child.pid)) return [3 /*break*/, 6];
+                    (0, tree_kill_1.default)(child.pid);
                     return [4 /*yield*/, retryWait()];
                 case 5:
                     _c.sent();
-                    throw new Error("Timeout of " + getTimeout() + "ms hit");
+                    throw new Error("Timeout of ".concat(getTimeout(), "ms hit"));
                 case 6:
                     if (!(exit > 0)) return [3 /*break*/, 8];
                     return [4 /*yield*/, retryWait()];
                 case 7:
                     _c.sent();
-                    throw new Error("Child_process exited with error code " + exit);
+                    throw new Error("Child_process exited with error code ".concat(exit));
                 case 8: return [2 /*return*/];
             }
         });
@@ -840,16 +840,16 @@ function runAction() {
                 case 3:
                     _a.trys.push([3, 5, , 12]);
                     // just keep overwriting attempts output
-                    core_1.setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
+                    (0, core_1.setOutput)(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
                     return [4 /*yield*/, runCmd(attempt)];
                 case 4:
                     _a.sent();
-                    core_1.info("Command completed after " + attempt + " attempt(s).");
+                    (0, core_1.info)("Command completed after ".concat(attempt, " attempt(s)."));
                     return [3 /*break*/, 13];
                 case 5:
                     error_2 = _a.sent();
                     if (!(attempt === MAX_ATTEMPTS)) return [3 /*break*/, 6];
-                    throw new Error("Final attempt failed. " + error_2.message);
+                    throw new Error("Final attempt failed. ".concat(error_2.message));
                 case 6:
                     if (!(!done && RETRY_ON === 'error')) return [3 /*break*/, 7];
                     // error: timeout
@@ -865,10 +865,10 @@ function runAction() {
                 case 10:
                     _a.sent();
                     if (WARNING_ON_RETRY) {
-                        core_1.warning("Attempt " + attempt + " failed. Reason: " + error_2.message);
+                        (0, core_1.warning)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_2.message));
                     }
                     else {
-                        core_1.info("Attempt " + attempt + " failed. Reason: " + error_2.message);
+                        (0, core_1.info)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_2.message));
                     }
                     _a.label = 11;
                 case 11: return [3 /*break*/, 12];
@@ -882,21 +882,21 @@ function runAction() {
 }
 runAction()
     .then(function () {
-    core_1.setOutput(OUTPUT_EXIT_CODE_KEY, 0);
+    (0, core_1.setOutput)(OUTPUT_EXIT_CODE_KEY, 0);
     process.exit(0); // success
 })
     .catch(function (err) {
     // exact error code if available, otherwise just 1
     var exitCode = exit > 0 ? exit : 1;
     if (CONTINUE_ON_ERROR) {
-        core_1.warning(err.message);
+        (0, core_1.warning)(err.message);
     }
     else {
-        core_1.error(err.message);
+        (0, core_1.error)(err.message);
     }
     // these can be  helpful to know if continue-on-error is true
-    core_1.setOutput(OUTPUT_EXIT_ERROR_KEY, err.message);
-    core_1.setOutput(OUTPUT_EXIT_CODE_KEY, exitCode);
+    (0, core_1.setOutput)(OUTPUT_EXIT_ERROR_KEY, err.message);
+    (0, core_1.setOutput)(OUTPUT_EXIT_CODE_KEY, exitCode);
     // if continue_on_error, exit with exact error code else exit gracefully
     // mimics native continue-on-error that is not supported in composite actions
     process.exit(CONTINUE_ON_ERROR ? 0 : exitCode);

@@ -119,7 +119,7 @@ async function runRetryCmd(): Promise<void> {
 
   try {
     await execSync(ON_RETRY_COMMAND, { stdio: 'inherit' });
-  } catch (error) {
+  } catch (error: any) {
     info(`WARNING: Retry command threw the error ${error.message}`)
   }
 }
@@ -160,7 +160,7 @@ async function runCmd(attempt: number) {
     await wait(ms.seconds(POLLING_INTERVAL_SECONDS));
   } while (Date.now() < end_time && !done);
 
-  if (!done) {
+  if (!done && child.pid) {
     kill(child.pid);
     await retryWait();
     throw new Error(`Timeout of ${getTimeout()}ms hit`);
@@ -182,7 +182,7 @@ async function runAction() {
       await runCmd(attempt);
       info(`Command completed after ${attempt} attempt(s).`);
       break;
-    } catch (error) {
+    } catch (error: any) {
       if (attempt === MAX_ATTEMPTS) {
         throw new Error(`Final attempt failed. ${error.message}`);
       } else if (!done && RETRY_ON === 'error') {
