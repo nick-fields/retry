@@ -5,3 +5,8 @@ comment:
   layout: 'diff, flags'
   behavior: default
   require_changes: true
+coverage:
+  # don't pass/fail PRs for coverage yet
+  status:
+    project: off
+    patch: off
