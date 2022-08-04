@@ -1,5 +1,5 @@
 import { getInput, error, warning, info, debug, setOutput } from '@actions/core';
-import { exec, execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import ms from 'milliseconds';
 import kill from 'tree-kill';
 
@@ -137,8 +137,8 @@ async function runCmd(attempt: number) {
   debug(`Running command ${COMMAND} on ${OS} using shell ${executable}`);
   const child =
     attempt > 1 && NEW_COMMAND_ON_RETRY
-      ? exec(NEW_COMMAND_ON_RETRY, { shell: executable })
-      : exec(COMMAND, { shell: executable });
+      ? spawn(NEW_COMMAND_ON_RETRY, { shell: executable })
+      : spawn(COMMAND, { shell: executable });
 
   child.stdout?.on('data', (data) => {
     process.stdout.write(data);

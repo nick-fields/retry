@@ -778,8 +778,8 @@ function runCmd(attempt) {
                     done = false;
                     (0, core_1.debug)("Running command ".concat(COMMAND, " on ").concat(OS, " using shell ").concat(executable));
                     child = attempt > 1 && NEW_COMMAND_ON_RETRY
-                        ? (0, child_process_1.exec)(NEW_COMMAND_ON_RETRY, { shell: executable })
-                        : (0, child_process_1.exec)(COMMAND, { shell: executable });
+                        ? (0, child_process_1.spawn)(NEW_COMMAND_ON_RETRY, { shell: executable })
+                        : (0, child_process_1.spawn)(COMMAND, { shell: executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
