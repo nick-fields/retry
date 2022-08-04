@@ -4,7 +4,7 @@ on:
 
 jobs:
   # runs on branch pushes only
-  ci_unuit:
+  ci_unit:
     name: Run Unit Tests
     if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
@@ -46,8 +46,8 @@ jobs:
           max_attempts: 2
           command: node -e 'console.log(process.env.NODE_OPTIONS)'
 
-  ci_integration_sigpipe:
-    name: Run Integration Issue#76 Tests
+  ci_integration_large_output:
+    name: Run Integration Large Output Tests
     if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     strategy:
@@ -61,18 +61,24 @@ jobs:
           node-version: 16
       - name: Install dependencies
         run: npm ci
-      - name: 100MiB
+      - name: Test 100MiB of output can be processed
         id: large-output
         continue-on-error: true
         uses: ./
         with:
           max_attempts: 1
           timeout_minutes: 5
-          command: 'make bytes-102400'
-      - uses: nick-invision/assert-action@v1
+          command: 'make -C ./test-data/large-output bytes-102400'
+      - name: Assert test had expected result
+        uses: nick-invision/assert-action@v1
         with:
           expected: failure
           actual: ${{ steps.large-output.outcome }}
+      - name: Assert exit code is expected
+        uses: nick-invision/assert-action@v1
+        with:
+          expected: 33
+          actual: ${{ steps.large-output.outputs.exit_code }}
 
   ci_integration:
     name: Run Integration Tests
