@@ -2,8 +2,9 @@ import { getInput, error, warning, info, debug, setOutput } from '@actions/core'
 import { execSync, spawn } from 'child_process';
 import ms from 'milliseconds';
 import kill from 'tree-kill';
+import { getInputBoolean, getInputNumber, getTimeout, validateInputs } from './inputs';
 
-import { wait } from './util';
+import { retryWait, wait } from './util';
 
 // inputs
 const TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
@@ -27,54 +28,6 @@ const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 
 let exit: number;
 let done: boolean;
-
-function getInputNumber(id: string, required: boolean): number | undefined {
-  const input = getInput(id, { required });
-  const num = Number.parseInt(input);
-
-  // empty is ok
-  if (!input && !required) {
-    return;
-  }
-
-  if (!Number.isInteger(num)) {
-    throw `Input ${id} only accepts numbers.  Received ${input}`;
-  }
-
-  return num;
-}
-
-function getInputBoolean(id: string): boolean {
-  const input = getInput(id);
-
-  if (!['true', 'false'].includes(input.toLowerCase())) {
-    throw `Input ${id} only accepts boolean values.  Received ${input}`;
-  }
-  return input.toLowerCase() === 'true';
-}
-
-async function retryWait() {
-  const waitStart = Date.now();
-  await wait(ms.seconds(RETRY_WAIT_SECONDS));
-  debug(`Waited ${Date.now() - waitStart}ms`);
-  debug(`Configured wait: ${ms.seconds(RETRY_WAIT_SECONDS)}ms`);
-}
-
-async function validateInputs() {
-  if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
-    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-  }
-}
-
-function getTimeout(): number {
-  if (TIMEOUT_MINUTES) {
-    return ms.minutes(TIMEOUT_MINUTES);
-  } else if (TIMEOUT_SECONDS) {
-    return ms.seconds(TIMEOUT_SECONDS);
-  }
-
-  throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-}
 
 function getExecutable(): string {
   if (!SHELL) {
@@ -128,7 +81,8 @@ async function runRetryCmd(): Promise<void> {
 }
 
 async function runCmd(attempt: number) {
-  const end_time = Date.now() + getTimeout();
+  const end_time =
+    Date.now() + getTimeout({ timeoutMinutes: TIMEOUT_MINUTES, timeoutSeconds: TIMEOUT_SECONDS });
   const executable = getExecutable();
 
   exit = 0;
@@ -166,10 +120,15 @@ async function runCmd(attempt: number) {
 
   if (!done && child.pid) {
     kill(child.pid);
-    await retryWait();
-    throw new Error(`Timeout of ${getTimeout()}ms hit`);
+    await retryWait(ms.seconds(RETRY_WAIT_SECONDS));
+    throw new Error(
+      `Timeout of ${getTimeout({
+        timeoutMinutes: TIMEOUT_MINUTES,
+        timeoutSeconds: TIMEOUT_SECONDS,
+      })}ms hit`
+    );
   } else if (exit > 0) {
-    await retryWait();
+    await retryWait(ms.seconds(RETRY_WAIT_SECONDS));
     throw new Error(`Child_process exited with error code ${exit}`);
   } else {
     return;
@@ -177,7 +136,10 @@ async function runCmd(attempt: number) {
 }
 
 async function runAction() {
-  await validateInputs();
+  await validateInputs({
+    timeoutMinutes: TIMEOUT_MINUTES,
+    timeoutSeconds: TIMEOUT_SECONDS,
+  });
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
