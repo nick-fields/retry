@@ -549,9 +549,8 @@ jobs:
             echo "this is
             a test"
 
-  # runs on push to master only
-  cd:
-    name: Publish Action
+  ci_all_tests_passed:
+    name: All tests passed
     needs:
       [
         ci_unit,
@@ -568,6 +567,14 @@ jobs:
         ci_integration_timeout_retry_on_error,
         ci_windows,
       ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: echo "If this is hit, all tests successfully passed"
+
+  # runs on push to master only
+  cd:
+    name: Publish Action
+    needs: [ci_all_tests_passed]
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
