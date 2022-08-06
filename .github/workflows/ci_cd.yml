@@ -491,11 +491,11 @@ jobs:
       - uses: nick-invision/assert-action@v1
         with:
           expected: 2
-          actual: ${{ steps.sad_path_timeout.outputs.total_attempts }}
+          actual: ${{ steps.sad_path_timeout_minutes.outputs.total_attempts }}
       - uses: nick-invision/assert-action@v1
         with:
           expected: failure
-          actual: ${{ steps.sad_path_timeout.outcome }}
+          actual: ${{ steps.sad_path_timeout_minutes.outcome }}
 
   ci_windows:
     name: Run Windows Tests
