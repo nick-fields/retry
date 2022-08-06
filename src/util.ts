@@ -1,4 +1,4 @@
-import { getInput, error, warning, info, debug, setOutput } from '@actions/core';
+import { debug } from '@actions/core';
 
 export async function wait(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
