@@ -527,7 +527,7 @@ module.exports = require("https");
 /***/ }),
 
 /***/ 322:
-/***/ (function(__unusedmodule, exports) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -568,7 +568,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wait = void 0;
+exports.retryWait = exports.wait = void 0;
+var core_1 = __webpack_require__(470);
 function wait(ms) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -577,6 +578,24 @@ function wait(ms) {
     });
 }
 exports.wait = wait;
+function retryWait(retryWaitSeconds) {
+    return __awaiter(this, void 0, void 0, function () {
+        var waitStart;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    waitStart = Date.now();
+                    return [4 /*yield*/, wait(retryWaitSeconds)];
+                case 1:
+                    _a.sent();
+                    (0, core_1.debug)("Waited ".concat(Date.now() - waitStart, "ms"));
+                    (0, core_1.debug)("Configured wait: ".concat(retryWaitSeconds, "ms"));
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.retryWait = retryWait;
 
 
 /***/ }),
@@ -630,129 +649,61 @@ var core_1 = __webpack_require__(470);
 var child_process_1 = __webpack_require__(129);
 var milliseconds_1 = __importDefault(__webpack_require__(156));
 var tree_kill_1 = __importDefault(__webpack_require__(791));
+var inputs_1 = __webpack_require__(679);
 var util_1 = __webpack_require__(322);
-// inputs
-var TIMEOUT_MINUTES = getInputNumber('timeout_minutes', false);
-var TIMEOUT_SECONDS = getInputNumber('timeout_seconds', false);
-var MAX_ATTEMPTS = getInputNumber('max_attempts', true) || 3;
-var COMMAND = (0, core_1.getInput)('command', { required: true });
-var RETRY_WAIT_SECONDS = getInputNumber('retry_wait_seconds', false) || 10;
-var SHELL = (0, core_1.getInput)('shell');
-var POLLING_INTERVAL_SECONDS = getInputNumber('polling_interval_seconds', false) || 1;
-var RETRY_ON = (0, core_1.getInput)('retry_on') || 'any';
-var WARNING_ON_RETRY = (0, core_1.getInput)('warning_on_retry').toLowerCase() === 'true';
-var ON_RETRY_COMMAND = (0, core_1.getInput)('on_retry_command');
-var CONTINUE_ON_ERROR = getInputBoolean('continue_on_error');
-var NEW_COMMAND_ON_RETRY = (0, core_1.getInput)('new_command_on_retry');
-var RETRY_ON_EXIT_CODE = getInputNumber('retry_on_exit_code', false);
 var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
 var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 var exit;
 var done;
-function getInputNumber(id, required) {
-    var input = (0, core_1.getInput)(id, { required: required });
-    var num = Number.parseInt(input);
-    // empty is ok
-    if (!input && !required) {
-        return;
-    }
-    if (!Number.isInteger(num)) {
-        throw "Input ".concat(id, " only accepts numbers.  Received ").concat(input);
-    }
-    return num;
-}
-function getInputBoolean(id) {
-    var input = (0, core_1.getInput)(id);
-    if (!['true', 'false'].includes(input.toLowerCase())) {
-        throw "Input ".concat(id, " only accepts boolean values.  Received ").concat(input);
-    }
-    return input.toLowerCase() === 'true';
-}
-function retryWait() {
-    return __awaiter(this, void 0, void 0, function () {
-        var waitStart;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    waitStart = Date.now();
-                    return [4 /*yield*/, (0, util_1.wait)(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS))];
-                case 1:
-                    _a.sent();
-                    (0, core_1.debug)("Waited ".concat(Date.now() - waitStart, "ms"));
-                    (0, core_1.debug)("Configured wait: ".concat(milliseconds_1.default.seconds(RETRY_WAIT_SECONDS), "ms"));
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-function validateInputs() {
-    return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            if ((!TIMEOUT_MINUTES && !TIMEOUT_SECONDS) || (TIMEOUT_MINUTES && TIMEOUT_SECONDS)) {
-                throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-            }
-            return [2 /*return*/];
-        });
-    });
-}
-function getTimeout() {
-    if (TIMEOUT_MINUTES) {
-        return milliseconds_1.default.minutes(TIMEOUT_MINUTES);
-    }
-    else if (TIMEOUT_SECONDS) {
-        return milliseconds_1.default.seconds(TIMEOUT_SECONDS);
-    }
-    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
-}
-function getExecutable() {
-    if (!SHELL) {
+function getExecutable(inputs) {
+    if (!inputs.shell) {
         return OS === 'win32' ? 'powershell' : 'bash';
     }
     var executable;
-    switch (SHELL) {
+    switch (inputs.shell) {
         case 'bash':
         case 'python':
         case 'pwsh': {
-            executable = SHELL;
+            executable = inputs.shell;
             break;
         }
         case 'sh': {
             if (OS === 'win32') {
-                throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
+                throw new Error("Shell ".concat(inputs.shell, " not allowed on OS ").concat(OS));
             }
-            executable = SHELL;
+            executable = inputs.shell;
             break;
         }
         case 'cmd':
         case 'powershell': {
             if (OS !== 'win32') {
-                throw new Error("Shell ".concat(SHELL, " not allowed on OS ").concat(OS));
+                throw new Error("Shell ".concat(inputs.shell, " not allowed on OS ").concat(OS));
             }
-            executable = SHELL + '.exe';
+            executable = inputs.shell + '.exe';
             break;
         }
         default: {
-            throw new Error("Shell ".concat(SHELL, " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells"));
+            throw new Error("Shell ".concat(inputs.shell, " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells"));
         }
     }
     return executable;
 }
-function runRetryCmd() {
+function runRetryCmd(inputs) {
     return __awaiter(this, void 0, void 0, function () {
         var error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     // if no retry script, just continue
-                    if (!ON_RETRY_COMMAND) {
+                    if (!inputs.on_retry_command) {
                         return [2 /*return*/];
                     }
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, (0, child_process_1.execSync)(ON_RETRY_COMMAND, { stdio: 'inherit' })];
+                    return [4 /*yield*/, (0, child_process_1.execSync)(inputs.on_retry_command, { stdio: 'inherit' })];
                 case 2:
                     _a.sent();
                     return [3 /*break*/, 4];
@@ -765,21 +716,21 @@ function runRetryCmd() {
         });
     });
 }
-function runCmd(attempt) {
+function runCmd(attempt, inputs) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var end_time, executable, child;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    end_time = Date.now() + getTimeout();
-                    executable = getExecutable();
+                    end_time = Date.now() + (0, inputs_1.getTimeout)(inputs);
+                    executable = getExecutable(inputs);
                     exit = 0;
                     done = false;
-                    (0, core_1.debug)("Running command ".concat(COMMAND, " on ").concat(OS, " using shell ").concat(executable));
-                    child = attempt > 1 && NEW_COMMAND_ON_RETRY
-                        ? (0, child_process_1.spawn)(NEW_COMMAND_ON_RETRY, { shell: executable })
-                        : (0, child_process_1.spawn)(COMMAND, { shell: executable });
+                    (0, core_1.debug)("Running command ".concat(inputs.command, " on ").concat(OS, " using shell ").concat(executable));
+                    child = attempt > 1 && inputs.new_command_on_retry
+                        ? (0, child_process_1.spawn)(inputs.new_command_on_retry, { shell: executable })
+                        : (0, child_process_1.spawn)(inputs.command, { shell: executable });
                     (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
                         process.stdout.write(data);
                     });
@@ -799,7 +750,7 @@ function runCmd(attempt) {
                         done = true;
                     });
                     _c.label = 1;
-                case 1: return [4 /*yield*/, (0, util_1.wait)(milliseconds_1.default.seconds(POLLING_INTERVAL_SECONDS))];
+                case 1: return [4 /*yield*/, (0, util_1.wait)(milliseconds_1.default.seconds(inputs.polling_interval_seconds))];
                 case 2:
                     _c.sent();
                     _c.label = 3;
@@ -809,13 +760,13 @@ function runCmd(attempt) {
                 case 4:
                     if (!(!done && child.pid)) return [3 /*break*/, 6];
                     (0, tree_kill_1.default)(child.pid);
-                    return [4 /*yield*/, retryWait()];
+                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 5:
                     _c.sent();
-                    throw new Error("Timeout of ".concat(getTimeout(), "ms hit"));
+                    throw new Error("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"));
                 case 6:
                     if (!(exit > 0)) return [3 /*break*/, 8];
-                    return [4 /*yield*/, retryWait()];
+                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 7:
                     _c.sent();
                     throw new Error("Child_process exited with error code ".concat(exit));
@@ -824,47 +775,47 @@ function runCmd(attempt) {
         });
     });
 }
-function runAction() {
+function runAction(inputs) {
     return __awaiter(this, void 0, void 0, function () {
         var attempt, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, validateInputs()];
+                case 0: return [4 /*yield*/, (0, inputs_1.validateInputs)(inputs)];
                 case 1:
                     _a.sent();
                     attempt = 1;
                     _a.label = 2;
                 case 2:
-                    if (!(attempt <= MAX_ATTEMPTS)) return [3 /*break*/, 13];
+                    if (!(attempt <= inputs.max_attempts)) return [3 /*break*/, 13];
                     _a.label = 3;
                 case 3:
                     _a.trys.push([3, 5, , 12]);
                     // just keep overwriting attempts output
                     (0, core_1.setOutput)(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-                    return [4 /*yield*/, runCmd(attempt)];
+                    return [4 /*yield*/, runCmd(attempt, inputs)];
                 case 4:
                     _a.sent();
                     (0, core_1.info)("Command completed after ".concat(attempt, " attempt(s)."));
                     return [3 /*break*/, 13];
                 case 5:
                     error_2 = _a.sent();
-                    if (!(attempt === MAX_ATTEMPTS)) return [3 /*break*/, 6];
+                    if (!(attempt === inputs.max_attempts)) return [3 /*break*/, 6];
                     throw new Error("Final attempt failed. ".concat(error_2.message));
                 case 6:
-                    if (!(!done && RETRY_ON === 'error')) return [3 /*break*/, 7];
+                    if (!(!done && inputs.retry_on === 'error')) return [3 /*break*/, 7];
                     // error: timeout
                     throw error_2;
                 case 7:
-                    if (!(RETRY_ON_EXIT_CODE && RETRY_ON_EXIT_CODE !== exit)) return [3 /*break*/, 8];
+                    if (!(inputs.retry_on_exit_code && inputs.retry_on_exit_code !== exit)) return [3 /*break*/, 8];
                     throw error_2;
                 case 8:
-                    if (!(exit > 0 && RETRY_ON === 'timeout')) return [3 /*break*/, 9];
+                    if (!(exit > 0 && inputs.retry_on === 'timeout')) return [3 /*break*/, 9];
                     // error: error
                     throw error_2;
-                case 9: return [4 /*yield*/, runRetryCmd()];
+                case 9: return [4 /*yield*/, runRetryCmd(inputs)];
                 case 10:
                     _a.sent();
-                    if (WARNING_ON_RETRY) {
+                    if (inputs.warning_on_retry) {
                         (0, core_1.warning)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_2.message));
                     }
                     else {
@@ -880,7 +831,8 @@ function runAction() {
         });
     });
 }
-runAction()
+var inputs = (0, inputs_1.getInputs)();
+runAction(inputs)
     .then(function () {
     (0, core_1.setOutput)(OUTPUT_EXIT_CODE_KEY, 0);
     process.exit(0); // success
@@ -888,7 +840,7 @@ runAction()
     .catch(function (err) {
     // exact error code if available, otherwise just 1
     var exitCode = exit > 0 ? exit : 1;
-    if (CONTINUE_ON_ERROR) {
+    if (inputs.continue_on_error) {
         (0, core_1.warning)(err.message);
     }
     else {
@@ -899,7 +851,7 @@ runAction()
     (0, core_1.setOutput)(OUTPUT_EXIT_CODE_KEY, exitCode);
     // if continue_on_error, exit with exact error code else exit gracefully
     // mimics native continue-on-error that is not supported in composite actions
-    process.exit(CONTINUE_ON_ERROR ? 0 : exitCode);
+    process.exit(inputs.continue_on_error ? 0 : exitCode);
 });
 
 
@@ -2442,6 +2394,132 @@ exports.summary = _summary;
 /***/ (function(module) {
 
 module.exports = require("util");
+
+/***/ }),
+
+/***/ 679:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getInputs = exports.getTimeout = exports.validateInputs = exports.getInputBoolean = exports.getInputNumber = void 0;
+var core_1 = __webpack_require__(470);
+var milliseconds_1 = __importDefault(__webpack_require__(156));
+function getInputNumber(id, required) {
+    var input = (0, core_1.getInput)(id, { required: required });
+    var num = Number.parseInt(input);
+    // empty is ok
+    if (!input && !required) {
+        return;
+    }
+    if (!Number.isInteger(num)) {
+        throw "Input ".concat(id, " only accepts numbers.  Received ").concat(input);
+    }
+    return num;
+}
+exports.getInputNumber = getInputNumber;
+function getInputBoolean(id) {
+    var input = (0, core_1.getInput)(id);
+    if (!['true', 'false'].includes(input.toLowerCase())) {
+        throw "Input ".concat(id, " only accepts boolean values.  Received ").concat(input);
+    }
+    return input.toLowerCase() === 'true';
+}
+exports.getInputBoolean = getInputBoolean;
+function validateInputs(inputs) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            if ((!inputs.timeout_minutes && !inputs.timeout_seconds) ||
+                (inputs.timeout_minutes && inputs.timeout_seconds)) {
+                throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
+            }
+            return [2 /*return*/];
+        });
+    });
+}
+exports.validateInputs = validateInputs;
+function getTimeout(inputs) {
+    if (inputs.timeout_minutes) {
+        return milliseconds_1.default.minutes(inputs.timeout_minutes);
+    }
+    else if (inputs.timeout_seconds) {
+        return milliseconds_1.default.seconds(inputs.timeout_seconds);
+    }
+    throw new Error('Must specify either timeout_minutes or timeout_seconds inputs');
+}
+exports.getTimeout = getTimeout;
+function getInputs() {
+    var timeout_minutes = getInputNumber('timeout_minutes', false);
+    var timeout_seconds = getInputNumber('timeout_seconds', false);
+    var max_attempts = getInputNumber('max_attempts', true) || 3;
+    var command = (0, core_1.getInput)('command', { required: true });
+    var retry_wait_seconds = getInputNumber('retry_wait_seconds', false) || 10;
+    var shell = (0, core_1.getInput)('shell');
+    var polling_interval_seconds = getInputNumber('polling_interval_seconds', false) || 1;
+    var retry_on = (0, core_1.getInput)('retry_on') || 'any';
+    var warning_on_retry = (0, core_1.getInput)('warning_on_retry').toLowerCase() === 'true';
+    var on_retry_command = (0, core_1.getInput)('on_retry_command');
+    var continue_on_error = getInputBoolean('continue_on_error');
+    var new_command_on_retry = (0, core_1.getInput)('new_command_on_retry');
+    var retry_on_exit_code = getInputNumber('retry_on_exit_code', false);
+    return {
+        timeout_minutes: timeout_minutes,
+        timeout_seconds: timeout_seconds,
+        max_attempts: max_attempts,
+        command: command,
+        retry_wait_seconds: retry_wait_seconds,
+        shell: shell,
+        polling_interval_seconds: polling_interval_seconds,
+        retry_on: retry_on,
+        warning_on_retry: warning_on_retry,
+        on_retry_command: on_retry_command,
+        continue_on_error: continue_on_error,
+        new_command_on_retry: new_command_on_retry,
+        retry_on_exit_code: retry_on_exit_code,
+    };
+}
+exports.getInputs = getInputs;
+
 
 /***/ }),
 
