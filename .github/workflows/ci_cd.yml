@@ -569,7 +569,7 @@ jobs:
       ]
     runs-on: ubuntu-latest
     steps:
-      - name: echo "If this is hit, all tests successfully passed"
+      - run: echo "If this is hit, all tests successfully passed"
 
   # runs on push to master only
   cd:
