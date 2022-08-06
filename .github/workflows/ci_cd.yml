@@ -552,7 +552,8 @@ jobs:
   # runs on push to master only
   cd:
     name: Publish Action
-    needs: [
+    needs:
+      [
         ci_unit,
         ci_integration,
         ci_integration_envvar,
@@ -560,7 +561,7 @@ jobs:
         ci_integration_on_retry_cmd,
         ci_integration_retry_wait_seconds,
         ci_integration_continue_on_error,
-        ci_integration_retry_on_exit_code
+        ci_integration_retry_on_exit_code,
         ci_integration_timeout_seconds,
         ci_integration_timeout_minutes,
         ci_integration_timeout_retry_on_timeout,
