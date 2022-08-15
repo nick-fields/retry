@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# run lint/styling on staged changes
+npx lint-staged
+
+# regenerate dist
+npm run prepare && git add .
