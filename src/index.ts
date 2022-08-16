@@ -127,7 +127,7 @@ async function runAction(inputs: Inputs) {
         break;
         // eslint-disable-next-line
       }
-      await retryWait();
+      await retryWait(ms.seconds(inputs.retry_wait_seconds));
     } catch (error: any) {
       if (attempt === inputs.max_attempts) {
         throw new Error(`Final attempt failed. ${error.message}`);
