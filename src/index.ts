@@ -123,7 +123,7 @@ async function runAction(inputs: Inputs) {
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
       await runCmd(attempt, inputs);
       info(`Command completed after ${attempt} attempt(s).`);
-      if (RETRY_ON !== 'success') {
+      if (inputs.retry_on !== 'success') {
         break;
         // eslint-disable-next-line
       }
