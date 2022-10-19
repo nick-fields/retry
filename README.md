@@ -156,7 +156,7 @@ with:
 ```yaml
 - uses: nick-fields/retry@v2
   id: retry
-  # see https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
+  # see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
   continue-on-error: true
   with:
     timeout_seconds: 15
