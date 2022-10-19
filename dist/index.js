@@ -971,7 +971,7 @@ function getExecutable(inputs) {
             break;
         }
         default: {
-            throw new Error("Shell ".concat(inputs.shell, " not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells"));
+            throw new Error("Shell ".concat(inputs.shell, " not supported.  See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell for supported shells"));
         }
     }
     return executable;
