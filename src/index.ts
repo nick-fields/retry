@@ -44,7 +44,7 @@ function getExecutable(inputs: Inputs): string {
     }
     default: {
       throw new Error(
-        `Shell ${inputs.shell} not supported.  See https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell for supported shells`
+        `Shell ${inputs.shell} not supported.  See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell for supported shells`
       );
     }
   }

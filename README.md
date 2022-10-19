@@ -30,7 +30,7 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 ### `shell`
 
-**Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise. Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#using-a-specific-shell)
+**Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise. Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell)
 
 ### `polling_interval_seconds`
 
@@ -156,7 +156,7 @@ with:
 ```yaml
 - uses: nick-fields/retry@v2
   id: retry
-  # see https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
+  # see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
   continue-on-error: true
   with:
     timeout_seconds: 15
