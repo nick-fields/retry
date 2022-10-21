@@ -88,13 +88,16 @@ async function runCmd(attempt: number, inputs: Inputs) {
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
     debug(`Signal: ${signal}`);
-    if (code && code > 0) {
-      exit = code;
-    }
+
     // timeouts are killed manually
     if (signal === 'SIGTERM') {
       return;
     }
+
+    if (code && code > 0) {
+      exit = code;
+    }
+
     done = true;
   });
 

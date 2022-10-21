@@ -1026,12 +1026,12 @@ function runCmd(attempt, inputs) {
                     child.on('exit', function (code, signal) {
                         (0, core_1.debug)("Code: ".concat(code));
                         (0, core_1.debug)("Signal: ".concat(signal));
-                        if (code && code > 0) {
-                            exit = code;
-                        }
                         // timeouts are killed manually
                         if (signal === 'SIGTERM') {
                             return;
+                        }
+                        if (code && code > 0) {
+                            exit = code;
                         }
                         done = true;
                     });
