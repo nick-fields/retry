@@ -1005,7 +1005,7 @@ function runRetryCmd(inputs) {
 function runCmd(attempt, inputs) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var end_time, executable, child;
+        var end_time, executable, timeout, child;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -1013,6 +1013,7 @@ function runCmd(attempt, inputs) {
                     executable = getExecutable(inputs);
                     exit = 0;
                     done = false;
+                    timeout = false;
                     (0, core_1.debug)("Running command ".concat(inputs.command, " on ").concat(OS, " using shell ").concat(executable));
                     child = attempt > 1 && inputs.new_command_on_retry
                         ? (0, child_process_1.spawn)(inputs.new_command_on_retry, { shell: executable })
@@ -1030,6 +1031,10 @@ function runCmd(attempt, inputs) {
                         if (signal === 'SIGTERM') {
                             return;
                         }
+                        // On Windows signal is null.
+                        if (timeout) {
+                            return;
+                        }
                         if (code && code > 0) {
                             exit = code;
                         }
@@ -1045,6 +1050,7 @@ function runCmd(attempt, inputs) {
                     _c.label = 4;
                 case 4:
                     if (!(!done && child.pid)) return [3 /*break*/, 6];
+                    timeout = true;
                     (0, tree_kill_1.default)(child.pid);
                     return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 5:
