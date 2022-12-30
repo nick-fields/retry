@@ -71,6 +71,7 @@ async function runCmd(attempt: number, inputs: Inputs) {
 
   exit = 0;
   done = false;
+  let timeout = false;
 
   debug(`Running command ${inputs.command} on ${OS} using shell ${executable}`);
   const child =
@@ -88,13 +89,21 @@ async function runCmd(attempt: number, inputs: Inputs) {
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
     debug(`Signal: ${signal}`);
-    if (code && code > 0) {
-      exit = code;
-    }
+
     // timeouts are killed manually
     if (signal === 'SIGTERM') {
       return;
     }
+
+    // On Windows signal is null.
+    if (timeout) {
+      return;
+    }
+
+    if (code && code > 0) {
+      exit = code;
+    }
+
     done = true;
   });
 
@@ -103,6 +112,7 @@ async function runCmd(attempt: number, inputs: Inputs) {
   } while (Date.now() < end_time && !done);
 
   if (!done && child.pid) {
+    timeout = true;
     kill(child.pid);
     await retryWait(ms.seconds(inputs.retry_wait_seconds));
     throw new Error(`Timeout of ${getTimeout(inputs)}ms hit`);
