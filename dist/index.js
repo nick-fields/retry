@@ -891,6 +891,21 @@ exports.retryWait = retryWait;
 
 "use strict";
 
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -941,8 +956,17 @@ var OS = process.platform;
 var OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 var OUTPUT_EXIT_CODE_KEY = 'exit_code';
 var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
-var exit;
 var done;
+var ErrorWithCode = /** @class */ (function (_super) {
+    __extends(ErrorWithCode, _super);
+    function ErrorWithCode(message, code) {
+        var _this = _super.call(this) || this;
+        _this.message = message;
+        _this.code = code;
+        return _this;
+    }
+    return ErrorWithCode;
+}(Error));
 function getExecutable(inputs) {
     if (!inputs.shell) {
         return OS === 'win32' ? 'powershell' : 'bash';
@@ -1005,7 +1029,7 @@ function runRetryCmd(inputs) {
 function runCmd(attempt, inputs) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var end_time, executable, timeout, child;
+        var end_time, executable, exit, timeout, child;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -1055,13 +1079,13 @@ function runCmd(attempt, inputs) {
                     return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 5:
                     _c.sent();
-                    throw new Error("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"));
+                    throw new ErrorWithCode("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"), exit);
                 case 6:
                     if (!(exit > 0)) return [3 /*break*/, 8];
                     return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 7:
                     _c.sent();
-                    throw new Error("Child_process exited with error code ".concat(exit));
+                    throw new ErrorWithCode("Child_process exited with error code ".concat(exit), exit);
                 case 8: return [2 /*return*/];
             }
         });
@@ -1069,7 +1093,7 @@ function runCmd(attempt, inputs) {
 }
 function runAction(inputs) {
     return __awaiter(this, void 0, void 0, function () {
-        var attempt, error_2;
+        var attempt, error_2, exit;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, (0, inputs_1.validateInputs)(inputs)];
@@ -1091,8 +1115,9 @@ function runAction(inputs) {
                     return [3 /*break*/, 13];
                 case 5:
                     error_2 = _a.sent();
+                    exit = error_2 instanceof ErrorWithCode ? error_2.code : 1;
                     if (!(attempt === inputs.max_attempts)) return [3 /*break*/, 6];
-                    throw new Error("Final attempt failed. ".concat(error_2.message));
+                    throw new ErrorWithCode("Final attempt failed. ".concat(error_2.message), exit);
                 case 6:
                     if (!(!done && inputs.retry_on === 'error')) return [3 /*break*/, 7];
                     // error: timeout
@@ -1130,8 +1155,7 @@ runAction(inputs)
     process.exit(0); // success
 })
     .catch(function (err) {
-    // exact error code if available, otherwise just 1
-    var exitCode = exit > 0 ? exit : 1;
+    var exitCode = err instanceof ErrorWithCode ? err.code : 1;
     if (inputs.continue_on_error) {
         (0, core_1.warning)(err.message);
     }

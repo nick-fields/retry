@@ -11,8 +11,13 @@ const OUTPUT_TOTAL_ATTEMPTS_KEY = 'total_attempts';
 const OUTPUT_EXIT_CODE_KEY = 'exit_code';
 const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 
-let exit: number;
 let done: boolean;
+
+class ErrorWithCode extends Error {
+  constructor(readonly message: string, readonly code: number) {
+    super();
+  }
+}
 
 function getExecutable(inputs: Inputs): string {
   if (!inputs.shell) {
@@ -69,7 +74,7 @@ async function runCmd(attempt: number, inputs: Inputs) {
   const end_time = Date.now() + getTimeout(inputs);
   const executable = getExecutable(inputs);
 
-  exit = 0;
+  let exit = 0;
   done = false;
   let timeout = false;
 
@@ -115,10 +120,10 @@ async function runCmd(attempt: number, inputs: Inputs) {
     timeout = true;
     kill(child.pid);
     await retryWait(ms.seconds(inputs.retry_wait_seconds));
-    throw new Error(`Timeout of ${getTimeout(inputs)}ms hit`);
+    throw new ErrorWithCode(`Timeout of ${getTimeout(inputs)}ms hit`, exit);
   } else if (exit > 0) {
     await retryWait(ms.seconds(inputs.retry_wait_seconds));
-    throw new Error(`Child_process exited with error code ${exit}`);
+    throw new ErrorWithCode(`Child_process exited with error code ${exit}`, exit);
   } else {
     return;
   }
@@ -136,8 +141,9 @@ async function runAction(inputs: Inputs) {
       break;
       // eslint-disable-next-line
     } catch (error: any) {
+      const exit = error instanceof ErrorWithCode ? error.code : 1;
       if (attempt === inputs.max_attempts) {
-        throw new Error(`Final attempt failed. ${error.message}`);
+        throw new ErrorWithCode(`Final attempt failed. ${error.message}`, exit);
       } else if (!done && inputs.retry_on === 'error') {
         // error: timeout
         throw error;
@@ -166,8 +172,7 @@ runAction(inputs)
     process.exit(0); // success
   })
   .catch((err) => {
-    // exact error code if available, otherwise just 1
-    const exitCode = exit > 0 ? exit : 1;
+    const exitCode = err instanceof ErrorWithCode ? err.code : 1;
 
     if (inputs.continue_on_error) {
       warning(err.message);
