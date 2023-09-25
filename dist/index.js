@@ -963,6 +963,8 @@ var ErrorWithCode = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.message = message;
         _this.code = code;
+        _this.code = code;
+        _this.message = message;
         return _this;
     }
     return ErrorWithCode;

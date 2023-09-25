@@ -16,6 +16,8 @@ let done: boolean;
 class ErrorWithCode extends Error {
   constructor(readonly message: string, readonly code: number) {
     super();
+    this.code = code;
+    this.message = message;
   }
 }
 
