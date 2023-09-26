@@ -1,7 +1,10 @@
 name: CI/CD
 on:
-  # only on PRs into default branch
+  # only on PRs into and merge to default branch
   pull_request:
+    branches:
+      - master
+  push:
     branches:
       - master
 
@@ -560,7 +563,7 @@ jobs:
     steps:
       - run: echo "If this is hit, all tests successfully passed"
 
-  # runs on merge to master only
+  # runs on merge to default only
   cd:
     name: Publish Action
     needs: [ci_all_tests_passed]
