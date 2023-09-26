@@ -974,7 +974,8 @@ function getExecutable(inputs) {
         return OS === 'win32' ? 'powershell' : 'bash';
     }
     var executable;
-    switch (inputs.shell) {
+    var shellName = inputs.shell.split(' ')[0];
+    switch (shellName) {
         case 'bash':
         case 'python':
         case 'pwsh': {
@@ -983,7 +984,7 @@ function getExecutable(inputs) {
         }
         case 'sh': {
             if (OS === 'win32') {
-                throw new Error("Shell ".concat(inputs.shell, " not allowed on OS ").concat(OS));
+                throw new Error("Shell ".concat(shellName, " not allowed on OS ").concat(OS));
             }
             executable = inputs.shell;
             break;
@@ -991,13 +992,13 @@ function getExecutable(inputs) {
         case 'cmd':
         case 'powershell': {
             if (OS !== 'win32') {
-                throw new Error("Shell ".concat(inputs.shell, " not allowed on OS ").concat(OS));
+                throw new Error("Shell ".concat(shellName, " not allowed on OS ").concat(OS));
             }
-            executable = inputs.shell + '.exe';
+            executable = shellName + '.exe' + inputs.shell.replace(shellName, '');
             break;
         }
         default: {
-            throw new Error("Shell ".concat(inputs.shell, " not supported.  See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell for supported shells"));
+            throw new Error("Shell ".concat(shellName, " not supported.  See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell for supported shells"));
         }
     }
     return executable;

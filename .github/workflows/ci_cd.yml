@@ -1,12 +1,16 @@
 name: CI/CD
 on:
+  # only on PRs into and merge to default branch
+  pull_request:
+    branches:
+      - master
   push:
+    branches:
+      - master
 
 jobs:
-  # runs on branch pushes only
   ci_unit:
     name: Run Unit Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,7 +30,6 @@ jobs:
 
   ci_integration:
     name: Run Integration Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -137,7 +140,6 @@ jobs:
 
   ci_integration_envvar:
     name: Run Integration Env Var Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -159,7 +161,6 @@ jobs:
 
   ci_integration_large_output:
     name: Run Integration Large Output Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -191,7 +192,6 @@ jobs:
 
   ci_integration_retry_on_exit_code:
     name: Run Integration retry_on_exit_code Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -240,7 +240,6 @@ jobs:
 
   ci_integration_continue_on_error:
     name: Run Integration continue_on_error Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -288,7 +287,6 @@ jobs:
 
   ci_integration_retry_wait_seconds:
     name: Run Integration Tests (retry_wait_seconds)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -325,7 +323,6 @@ jobs:
 
   ci_integration_on_retry_cmd:
     name: Run Integration Tests (on_retry_command)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -369,7 +366,6 @@ jobs:
   # timeout tests take longer to run so run in parallel
   ci_integration_timeout_seconds:
     name: Run Integration Timeout Tests (seconds)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -400,7 +396,6 @@ jobs:
 
   ci_integration_timeout_retry_on_timeout:
     name: Run Integration Timeout Tests (retry_on timeout)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -432,7 +427,6 @@ jobs:
 
   ci_integration_timeout_retry_on_error:
     name: Run Integration Timeout Tests (retry_on error)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -468,7 +462,6 @@ jobs:
 
   ci_integration_timeout_minutes:
     name: Run Integration Timeout Tests (minutes)
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -499,7 +492,6 @@ jobs:
 
   ci_windows:
     name: Run Windows Tests
-    if: startsWith(github.ref, 'refs/heads')
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -571,7 +563,7 @@ jobs:
     steps:
       - run: echo "If this is hit, all tests successfully passed"
 
-  # runs on push to master only
+  # runs on merge to default only
   cd:
     name: Publish Action
     needs: [ci_all_tests_passed]
@@ -588,7 +580,7 @@ jobs:
         run: npm ci
       - name: Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v2
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag
