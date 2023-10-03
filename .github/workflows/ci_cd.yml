@@ -571,11 +571,11 @@ jobs:
     steps:
       - run: echo "If this is hit, all tests successfully passed"
 
-  # runs on push to master only
+  # runs on push to main only
   cd:
     name: Publish Action
     needs: [ci_all_tests_passed]
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
