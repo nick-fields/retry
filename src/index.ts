@@ -60,7 +60,7 @@ async function runRetryCmd(inputs: Inputs): Promise<void> {
   }
 
   try {
-    await execSync(inputs.on_retry_command, { stdio: 'inherit' });
+    execSync(inputs.on_retry_command, { stdio: 'inherit', shell: getExecutable(inputs) });
     // eslint-disable-next-line
   } catch (error: any) {
     info(`WARNING: Retry command threw the error ${error.message}`);
