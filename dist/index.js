@@ -979,27 +979,19 @@ function getExecutable(inputs) {
 }
 function runRetryCmd(inputs) {
     return __awaiter(this, void 0, void 0, function () {
-        var error_1;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    // if no retry script, just continue
-                    if (!inputs.on_retry_command) {
-                        return [2 /*return*/];
-                    }
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, (0, child_process_1.execSync)(inputs.on_retry_command, { stdio: 'inherit' })];
-                case 2:
-                    _a.sent();
-                    return [3 /*break*/, 4];
-                case 3:
-                    error_1 = _a.sent();
-                    (0, core_1.info)("WARNING: Retry command threw the error ".concat(error_1.message));
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+            // if no retry script, just continue
+            if (!inputs.on_retry_command) {
+                return [2 /*return*/];
             }
+            try {
+                (0, child_process_1.execSync)(inputs.on_retry_command, { stdio: 'inherit', shell: getExecutable(inputs) });
+                // eslint-disable-next-line
+            }
+            catch (error) {
+                (0, core_1.info)("WARNING: Retry command threw the error ".concat(error.message));
+            }
+            return [2 /*return*/];
         });
     });
 }
@@ -1070,7 +1062,7 @@ function runCmd(attempt, inputs) {
 }
 function runAction(inputs) {
     return __awaiter(this, void 0, void 0, function () {
-        var attempt, error_2;
+        var attempt, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, (0, inputs_1.validateInputs)(inputs)];
@@ -1091,28 +1083,28 @@ function runAction(inputs) {
                     (0, core_1.info)("Command completed after ".concat(attempt, " attempt(s)."));
                     return [3 /*break*/, 13];
                 case 5:
-                    error_2 = _a.sent();
+                    error_1 = _a.sent();
                     if (!(attempt === inputs.max_attempts)) return [3 /*break*/, 6];
-                    throw new Error("Final attempt failed. ".concat(error_2.message));
+                    throw new Error("Final attempt failed. ".concat(error_1.message));
                 case 6:
                     if (!(!done && inputs.retry_on === 'error')) return [3 /*break*/, 7];
                     // error: timeout
-                    throw error_2;
+                    throw error_1;
                 case 7:
                     if (!(inputs.retry_on_exit_code && inputs.retry_on_exit_code !== exit)) return [3 /*break*/, 8];
-                    throw error_2;
+                    throw error_1;
                 case 8:
                     if (!(exit > 0 && inputs.retry_on === 'timeout')) return [3 /*break*/, 9];
                     // error: error
-                    throw error_2;
+                    throw error_1;
                 case 9: return [4 /*yield*/, runRetryCmd(inputs)];
                 case 10:
                     _a.sent();
                     if (inputs.warning_on_retry) {
-                        (0, core_1.warning)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_2.message));
+                        (0, core_1.warning)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_1.message));
                     }
                     else {
-                        (0, core_1.info)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_2.message));
+                        (0, core_1.info)("Attempt ".concat(attempt, " failed. Reason: ").concat(error_1.message));
                     }
                     _a.label = 11;
                 case 11: return [3 /*break*/, 12];
