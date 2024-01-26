@@ -1,4 +1,5 @@
 import 'jest';
+import { getHeapStatistics } from 'v8';
 
 import { wait } from './util';
 
