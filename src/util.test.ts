@@ -3,6 +3,11 @@ import { getHeapStatistics } from 'v8';
 
 import { wait } from './util';
 
+// otherwise, TypeError: Cannot assign to read only property 'performance' of object '[object global]'
+Object.defineProperty(global, 'performance', {
+  writable: true,
+});
+
 // mocks the setTimeout function, see https://jestjs.io/docs/timer-mocks
 jest.useFakeTimers();
 jest.spyOn(global, 'setTimeout');
