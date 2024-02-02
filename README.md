@@ -79,7 +79,7 @@ The final error returned by the command
 ### Shell
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_minutes: 10
   max_attempts: 3
@@ -90,7 +90,7 @@ with:
 ### Timeout in minutes
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_minutes: 10
   max_attempts: 3
@@ -100,7 +100,7 @@ with:
 ### Timeout in seconds
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -110,7 +110,7 @@ with:
 ### Only retry after timeout
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -121,7 +121,7 @@ with:
 ### Only retry after error
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -132,7 +132,7 @@ with:
 ### Retry using continue_on_error input (in composite action) but allow failure and do something with output
 
 ```yaml
-- uses: nick-fields/retry@v2
+- uses: nick-fields/retry@v3
   id: retry
   with:
     timeout_seconds: 15
@@ -154,7 +154,7 @@ with:
 ### Retry using continue-on-error built-in command (in workflow action) but allow failure and do something with output
 
 ```yaml
-- uses: nick-fields/retry@v2
+- uses: nick-fields/retry@v3
   id: retry
   # see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idcontinue-on-error
   continue-on-error: true
@@ -183,7 +183,7 @@ with:
 ### Run script after failure but before retry
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_seconds: 15
   max_attempts: 3
@@ -194,7 +194,7 @@ with:
 ### Run different command after first failure
 
 ```yaml
-uses: nick-fields/retry@v2
+uses: nick-fields/retry@v3
 with:
   timeout_seconds: 15
   max_attempts: 3
