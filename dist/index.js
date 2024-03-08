@@ -24964,7 +24964,7 @@ function runRetryCmd(inputs) {
         });
     });
 }
-function runCmd(attempt, inputs) {
+function runCmd(attempt, inputs, retry_remaining) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         var end_time, executable, timeout, child;
@@ -25011,20 +25011,24 @@ function runCmd(attempt, inputs) {
                     if (Date.now() < end_time && !done) return [3 /*break*/, 1];
                     _c.label = 4;
                 case 4:
-                    if (!(!done && child.pid)) return [3 /*break*/, 6];
+                    if (!(!done && child.pid)) return [3 /*break*/, 7];
                     timeout = true;
                     (0, tree_kill_1.default)(child.pid);
+                    if (!retry_remaining) return [3 /*break*/, 6];
                     return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 5:
                     _c.sent();
-                    throw new Error("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"));
-                case 6:
-                    if (!(exit > 0)) return [3 /*break*/, 8];
-                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
+                    _c.label = 6;
+                case 6: throw new Error("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"));
                 case 7:
+                    if (!(exit > 0)) return [3 /*break*/, 10];
+                    if (!retry_remaining) return [3 /*break*/, 9];
+                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
+                case 8:
                     _c.sent();
-                    throw new Error("Child_process exited with error code ".concat(exit));
-                case 8: return [2 /*return*/];
+                    _c.label = 9;
+                case 9: throw new Error("Child_process exited with error code ".concat(exit));
+                case 10: return [2 /*return*/];
             }
         });
     });
@@ -25046,7 +25050,7 @@ function runAction(inputs) {
                     _a.trys.push([3, 5, , 12]);
                     // just keep overwriting attempts output
                     (0, core_1.setOutput)(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-                    return [4 /*yield*/, runCmd(attempt, inputs)];
+                    return [4 /*yield*/, runCmd(attempt, inputs, attempt !== inputs.max_attempts)];
                 case 4:
                     _a.sent();
                     (0, core_1.info)("Command completed after ".concat(attempt, " attempt(s)."));
