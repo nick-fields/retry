@@ -67,7 +67,7 @@ async function runRetryCmd(inputs: Inputs): Promise<void> {
   }
 }
 
-async function runCmd(attempt: number, inputs: Inputs) {
+async function runCmd(attempt: number, inputs: Inputs, retry_remaining: boolean) {
   const end_time = Date.now() + getTimeout(inputs);
   const executable = getExecutable(inputs);
 
@@ -116,10 +116,14 @@ async function runCmd(attempt: number, inputs: Inputs) {
   if (!done && child.pid) {
     timeout = true;
     kill(child.pid);
-    await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    if (retry_remaining) {
+      await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    }
     throw new Error(`Timeout of ${getTimeout(inputs)}ms hit`);
   } else if (exit > 0) {
-    await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    if (retry_remaining) {
+      await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    }
     throw new Error(`Child_process exited with error code ${exit}`);
   } else {
     return;
@@ -133,7 +137,7 @@ async function runAction(inputs: Inputs) {
     try {
       // just keep overwriting attempts output
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
-      await runCmd(attempt, inputs);
+      await runCmd(attempt, inputs, attempt !== inputs.max_attempts);
       info(`Command completed after ${attempt} attempt(s).`);
       break;
       // eslint-disable-next-line
