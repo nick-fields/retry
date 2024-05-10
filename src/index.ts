@@ -13,6 +13,8 @@ const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 
 let exit: number;
 let done: boolean;
+let processExited: boolean;
+let processFinished: boolean;
 
 function getExecutable(inputs: Inputs): string {
   if (!inputs.shell) {
@@ -73,6 +75,8 @@ async function runCmd(attempt: number, inputs: Inputs) {
 
   exit = 0;
   done = false;
+  processExited = false;
+  processFinished = false;
   let timeout = false;
 
   debug(`Running command ${inputs.command} on ${OS} using shell ${executable}`);
@@ -91,9 +95,10 @@ async function runCmd(attempt: number, inputs: Inputs) {
   child.on('exit', (code, signal) => {
     debug(`Code: ${code}`);
     debug(`Signal: ${signal}`);
+    processExited = true;
 
     // timeouts are killed manually
-    if (signal === 'SIGTERM') {
+    if (signal === 'SIGTERM' || signal === 'SIGINT' || signal === 'SIGKILL') {
       return;
     }
 
@@ -109,14 +114,28 @@ async function runCmd(attempt: number, inputs: Inputs) {
     done = true;
   });
 
+  child.on('close', () => {
+    // Occurs on closing of streams and IPC channels.
+    debug(`Process streams closed.`);
+    processFinished = true;
+  });
+
   do {
     await wait(ms.seconds(inputs.polling_interval_seconds));
   } while (Date.now() < end_time && !done);
 
   if (!done && child.pid) {
     timeout = true;
-    kill(child.pid);
+    kill(child.pid, "SIGTERM");
     await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    // If still not done, send SIGINT followed by SIGKILL
+    if (!processExited) {
+      kill(child.pid, "SIGINT");
+      await wait(3000);
+      if (!processFinished){
+        kill(child.pid, "SIGKILL");
+      }
+    }
     throw new Error(`Timeout of ${getTimeout(inputs)}ms hit`);
   } else if (exit > 0) {
     await retryWait(ms.seconds(inputs.retry_wait_seconds));
