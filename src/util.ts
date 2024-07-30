@@ -11,9 +11,7 @@ export async function retryWait(inputs: Inputs) {
     info('Using random wait strategy');
     const waitSecondsMin = ms.seconds(inputs.retry_wait_seconds_min);
     const waitSecondsMax = ms.seconds(inputs.retry_wait_seconds_max);
-    await retryWaitConstant(
-      ms.seconds(Math.random() * (waitSecondsMax - waitSecondsMin) + waitSecondsMin)
-    );
+    await retryWaitConstant(Math.random() * (waitSecondsMax - waitSecondsMin) + waitSecondsMin);
     debug(
       `Configured wait random between  ${inputs.retry_wait_seconds_min}s and ${inputs.retry_wait_seconds_max}s`
     );
@@ -27,7 +25,7 @@ export async function retryWait(inputs: Inputs) {
 }
 
 export async function retryWaitConstant(retryWaitMs: number) {
-  info(`Waiting ${retryWaitMs}ms before retrying`);
+  info(`🐌 Waiting ${retryWaitMs}ms before retrying`);
   const waitStart = Date.now();
   await wait(retryWaitMs);
   debug(`Waited ${Date.now() - waitStart}ms`);
