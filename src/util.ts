@@ -25,7 +25,7 @@ export async function retryWait(inputs: Inputs) {
 }
 
 export async function retryWaitConstant(retryWaitMs: number) {
-  info(`🐌 Waiting ${retryWaitMs}ms before retrying`);
+  info(`🐌 Waiting ${Math.ceil(retryWaitMs)}ms before retrying`);
   const waitStart = Date.now();
   await wait(retryWaitMs);
   debug(`Waited ${Date.now() - waitStart}ms`);
