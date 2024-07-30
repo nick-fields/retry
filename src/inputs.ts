@@ -7,6 +7,9 @@ export interface Inputs {
   max_attempts: number;
   command: string;
   retry_wait_seconds: number;
+  retry_wait_strategy: string;
+  retry_wait_seconds_min: number;
+  retry_wait_seconds_max: number;
   shell: string | undefined;
   polling_interval_seconds: number;
   retry_on: string | undefined;
@@ -67,6 +70,9 @@ export function getInputs(): Inputs {
   const max_attempts = getInputNumber('max_attempts', true) || 3;
   const command = getInput('command', { required: true });
   const retry_wait_seconds = getInputNumber('retry_wait_seconds', false) || 10;
+  const retry_wait_strategy = getInput('retry_wait_strategy', { required: false }) || 'fixed';
+  const retry_wait_seconds_min = getInputNumber('retry_wait_seconds_min', false) || 5;
+  const retry_wait_seconds_max = getInputNumber('retry_wait_seconds_max', false) || 10;
   const shell = getInput('shell');
   const polling_interval_seconds = getInputNumber('polling_interval_seconds', false) || 1;
   const retry_on = getInput('retry_on') || 'any';
@@ -82,6 +88,9 @@ export function getInputs(): Inputs {
     max_attempts,
     command,
     retry_wait_seconds,
+    retry_wait_strategy,
+    retry_wait_seconds_min,
+    retry_wait_seconds_max,
     shell,
     polling_interval_seconds,
     retry_on,
