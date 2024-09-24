@@ -135,8 +135,11 @@ async function runAction(inputs: Inputs) {
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
       await runCmd(attempt, inputs);
       info(`Command completed after ${attempt} attempt(s).`);
-      break;
-      // eslint-disable-next-line
+      if (inputs.retry_on !== 'success') {
+        break;
+        // eslint-disable-next-line
+      }
+      await retryWait(ms.seconds(inputs.retry_wait_seconds));
     } catch (error: any) {
       if (attempt === inputs.max_attempts) {
         throw new Error(`Final attempt failed. ${error.message}`);
