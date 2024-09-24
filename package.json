@@ -6,7 +6,7 @@
     "lint:base": "eslint --config ./.config/.eslintrc.js ",
     "lint": "npm run lint:base -- .",
     "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
-    "prepare": "ncc build src/index.ts && husky install",
+    "prepare": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --minify && husky install",
     "style:base": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ",
     "style": "npm run style:base -- .",
     "test": "jest -c ./.config/jest.config.js"
@@ -24,6 +24,7 @@
   "homepage": "https://github.com/nick-invision/retry#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
+    "esbuild": "^0.23.0",
     "milliseconds": "^1.0.3",
     "tree-kill": "^1.2.2"
   },

@@ -63,7 +63,7 @@ async function runRetryCmd(inputs: Inputs): Promise<void> {
     await execSync(inputs.on_retry_command, { stdio: 'inherit' });
     // eslint-disable-next-line
   } catch (error: any) {
-    info(`WARNING: Retry command threw the error ${error.message}`);
+    info(`⚠️ WARNING: Retry command threw the error ${error.message}`);
   }
 }
 
@@ -116,10 +116,10 @@ async function runCmd(attempt: number, inputs: Inputs) {
   if (!done && child.pid) {
     timeout = true;
     kill(child.pid);
-    await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    await retryWait(inputs);
     throw new Error(`Timeout of ${getTimeout(inputs)}ms hit`);
   } else if (exit > 0) {
-    await retryWait(ms.seconds(inputs.retry_wait_seconds));
+    await retryWait(inputs);
     throw new Error(`Child_process exited with error code ${exit}`);
   } else {
     return;
@@ -134,7 +134,7 @@ async function runAction(inputs: Inputs) {
       // just keep overwriting attempts output
       setOutput(OUTPUT_TOTAL_ATTEMPTS_KEY, attempt);
       await runCmd(attempt, inputs);
-      info(`Command completed after ${attempt} attempt(s).`);
+      info(`ℹ️ Command completed after ${attempt} attempt(s).`);
       break;
       // eslint-disable-next-line
     } catch (error: any) {
@@ -151,9 +151,9 @@ async function runAction(inputs: Inputs) {
       } else {
         await runRetryCmd(inputs);
         if (inputs.warning_on_retry) {
-          warning(`Attempt ${attempt} failed. Reason: ${error.message}`);
+          warning(`❌ Attempt ${attempt} failed. Reason: ${error.message}`);
         } else {
-          info(`Attempt ${attempt} failed. Reason: ${error.message}`);
+          info(`❌ Attempt ${attempt} failed. Reason: ${error.message}`);
         }
       }
     }

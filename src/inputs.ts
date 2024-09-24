@@ -7,6 +7,9 @@ export interface Inputs {
   max_attempts: number;
   command: string;
   retry_wait_seconds: number;
+  retry_wait_strategy: string;
+  retry_wait_seconds_min: number;
+  retry_wait_seconds_max: number;
   shell: string | undefined;
   polling_interval_seconds: number;
   retry_on: string | undefined;
@@ -15,6 +18,18 @@ export interface Inputs {
   continue_on_error: boolean;
   new_command_on_retry: string | undefined;
   retry_on_exit_code: number | undefined;
+}
+
+export function getInputPositiveNumber(id: string, required: boolean): number | undefined {
+  const number = getInputNumber(id, required);
+  if (typeof number === 'undefined') {
+    return;
+  }
+
+  if (number < 0) {
+    throw `Input ${id} only accepts positive numbers.  Received ${number}`;
+  }
+  return number;
 }
 
 export function getInputNumber(id: string, required: boolean): number | undefined {
@@ -67,6 +82,9 @@ export function getInputs(): Inputs {
   const max_attempts = getInputNumber('max_attempts', true) || 3;
   const command = getInput('command', { required: true });
   const retry_wait_seconds = getInputNumber('retry_wait_seconds', false) || 10;
+  const retry_wait_strategy = getInput('retry_wait_strategy', { required: false }) || 'fixed';
+  const retry_wait_seconds_min = getInputPositiveNumber('retry_wait_seconds_min', false) || 5;
+  const retry_wait_seconds_max = getInputPositiveNumber('retry_wait_seconds_max', false) || 10;
   const shell = getInput('shell');
   const polling_interval_seconds = getInputNumber('polling_interval_seconds', false) || 1;
   const retry_on = getInput('retry_on') || 'any';
@@ -76,12 +94,19 @@ export function getInputs(): Inputs {
   const new_command_on_retry = getInput('new_command_on_retry');
   const retry_on_exit_code = getInputNumber('retry_on_exit_code', false);
 
+  if (retry_wait_seconds_min > retry_wait_seconds_max) {
+    throw new Error('retry_wait_seconds_min must be less than or equal to retry_wait_seconds_max');
+  }
+
   return {
     timeout_minutes,
     timeout_seconds,
     max_attempts,
     command,
     retry_wait_seconds,
+    retry_wait_strategy,
+    retry_wait_seconds_min,
+    retry_wait_seconds_max,
     shell,
     polling_interval_seconds,
     retry_on,

@@ -18,6 +18,18 @@ inputs:
     description: Number of seconds to wait before attempting the next retry
     required: false
     default: 10
+  retry_wait_seconds_min:
+    description: Number of seconds to min. wait before attempting the next retry - used for random wait strategy
+    required: false
+    default: 5
+  retry_wait_seconds_max:
+    description: Number of seconds to max wait before attempting the next retry - used for random wait strategy
+    required: false
+    default: 10
+  retry_wait_strategy:
+    description: Strategy to use for retry wait.  Supports fixed and random
+    required: false
+    default: fixed
   shell:
     description: Alternate shell to use (defaults to powershell on windows, bash otherwise).  Supports bash, python, pwsh, sh, cmd, and powershell
     required: false

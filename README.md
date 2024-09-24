@@ -28,6 +28,18 @@ Retries an Action step on failure or timeout. This is currently intended to repl
 
 **Optional** Number of seconds to wait before attempting the next retry. Defaults to `10`
 
+### `retry_wait_strategy`
+
+**Optional** Strategy to use for retry wait. Currently supports [fixed (default), random].
+
+### `retry_wait_seconds_min`
+
+**Optional** Min. number of seconds to wait before attempting the next retry when using random strategy. Defaults to `5`. Used only when `retry_wait_strategy` is set to `random`.
+
+### `retry_wait_seconds_max`
+
+**Optional** Max. number of seconds to wait before attempting the next retry when using random strategy. Defaults to `5` Used only when `retry_wait_strategy` is set to `random`.
+
 ### `shell`
 
 **Optional** Shell to use to execute `command`. Defaults to `powershell` on Windows, `bash` otherwise. Supports bash, python, pwsh, sh, cmd, and powershell per [docs](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell)
@@ -73,6 +85,16 @@ The final exit code returned by the command
 ### `exit_error`
 
 The final error returned by the command
+
+## Wait strategies
+
+### Fixed
+
+Default strategy. Waits for `retry_wait_seconds` between retries.
+
+### Random
+
+Waits for a random number of seconds between `retry_wait_seconds_min` and `retry_wait_seconds_max` between retries.
 
 ## Examples
 
