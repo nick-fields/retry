@@ -143,7 +143,7 @@ async function runAction(inputs: Inputs) {
       } else if (!done && inputs.retry_on === 'error') {
         // error: timeout
         throw error;
-      } else if (inputs.retry_on_exit_code && inputs.retry_on_exit_code !== exit) {
+      } else if (done && inputs.retry_on_exit_code && inputs.retry_on_exit_code !== exit) {
         throw error;
       } else if (exit > 0 && inputs.retry_on === 'timeout') {
         // error: error
