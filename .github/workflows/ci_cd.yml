@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/setup
       - name: Run Unit Tests
         run: npm test
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           directory: ./coverage/
           verbose: true
