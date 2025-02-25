@@ -8,6 +8,11 @@ concurrency:
 on:
   # only on PRs into and merge to default branch
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
     branches:
       - master
   push:
@@ -16,9 +21,11 @@ on:
 
 env:
   BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
-
+  PR_TRIGGERED: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
 jobs:
   setup:
+    # Skip running if labeled event but not rerun, otehrwise its a supported trigger event
+    if: ${{ github.event.label.name == 'rerun' || github.event.action != 'labeled' }}
     name: Setup
     runs-on: ubuntu-latest
     permissions:
@@ -30,22 +37,42 @@ jobs:
           ref: ${{ env.BRANCH }}
       - name: Setup and cache for later jobs
         uses: ./.github/actions/setup
-      # GHA requires bundled code, and we bundle automatically via pre-commit hook, but most contributions come in through UI which skips hooks.
-      # So bundle again here to ensure was not skipped, and if so commit the changes to ensure we're testing the correct code.
-      - name: Re-bundle and commit changes if found
-        # Don't re-bundle on on default branch
-        if: ${{ env.BRANCH != 'master' }}
+      # GHA requires bundled code to be commited so we bundle automatically via pre-commit hook. However, most contributions come in through the GH UI which skips hooks.
+      # So bundle again here just in case, and if changes are found then commit them to ensure we're testing the correct code.
+      # But GHA does not trigger on changes made via the default GH token, so we need to label the PR to re-run CI.
+      # Alternatives could be using a PAT (rotation/security burden), GH App (overkill/maintenance), or something like pre-commit.ci (not convincing). Lets try this first though
+      - name: Check for bundle changes after install
+        # Only run if not a push event since we only trigger this on the default branch and we don't want to make any non-PR changes there
+        if: ${{ github.event_name != 'push' }}
+        id: changes
         run: |
-          pnpm bundle
           if [[ -n "$(git status --porcelain)" ]]; then
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "patch: regenerated bundle"
-            git push
+            echo "CHANGES_FOUND=true" >> $GITHUB_OUTPUT
           else
             echo "No changes detected."
+            echo "CHANGES_FOUND=false" >> $GITHUB_OUTPUT
           fi
+      - name: Commit and push changes if found
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "patch: regenerated bundle"
+          git push
+      - name: Label PR to re-trigger CI
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "rerun"
+      - name: Remove label after clean re-run
+        # Only remove label if the PR was labeled with rerun and no changes were found. Changes found indicate a problem since they should have been previously committed
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'false' && github.event.label.name == 'rerun' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --remove-label "rerun"
 
   ci_unit:
     name: Run Unit Tests
