@@ -584,6 +584,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag
+        # only bump v# (e.g., v3) tag if semantic release action publishes any new version
+        if: ${{ steps.semantic.outputs.new_release_major_version != '' }}
         run: git tag -f v${MAJOR_VERSION} && git push -f origin v${MAJOR_VERSION}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
