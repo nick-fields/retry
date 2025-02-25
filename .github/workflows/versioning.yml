@@ -1,0 +1,13 @@
+name: Sync release tags
+
+on:
+  release:
+    types: [published, edited]
+
+jobs:
+  actions-tagger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Actions-R-Us/actions-tagger@f411bd910a5ad370d4511517e3eac7ff887c90ea # pin@v2
+        with:
+          publish_latest_tag: true
