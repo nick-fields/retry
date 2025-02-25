@@ -15,12 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Run Unit Tests
         run: npm test
       - uses: codecov/codecov-action@v3
@@ -34,12 +30,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: happy-path
         id: happy_path
@@ -144,12 +136,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: env-vars-passed-through
         uses: ./
         env:
@@ -165,12 +153,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Test 100MiB of output can be processed
         id: large-output
         continue-on-error: true
@@ -196,12 +180,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: retry_on_exit_code (with expected error code)
         id: retry_on_exit_code_expected
         uses: ./
@@ -244,12 +224,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: happy-path (continue_on_error)
         id: happy_path_continue_on_error
         uses: ./
@@ -291,12 +267,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (retry_wait_seconds)
         id: sad_path_wait_sec
@@ -327,12 +299,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: new-command-on-retry
         id: new-command-on-retry
@@ -370,12 +338,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (timeout)
         id: sad_path_timeout
@@ -400,12 +364,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: retry_on (timeout)
         id: retry_on_timeout
@@ -431,12 +391,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: retry_on (error) fails early if timeout encountered
         id: retry_on_error_fail
@@ -466,12 +422,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (timeout minutes)
         id: sad_path_timeout_minutes
@@ -496,12 +448,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Powershell test
         uses: ./
         with:
@@ -572,12 +520,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4
