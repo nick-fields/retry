@@ -3,13 +3,14 @@
   "version": "0.0.0-managed-by-semantic-release",
   "description": "Retries a GitHub Action step on failure or timeout.",
   "scripts": {
+    "bundle": "ncc build src/index.ts",
     "lint:base": "eslint --config ./.config/.eslintrc.js ",
-    "lint": "npm run lint:base -- .",
-    "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
+    "lint": "pnpm lint:base -- .",
+    "local": "pnpm prepare && node -r dotenv/config ./dist/index.js",
     "preinstall": "npx only-allow pnpm",
-    "prepare": "ncc build src/index.ts && husky install",
+    "prepare": "pnpm bundle && husky install",
     "style:base": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ",
-    "style": "npm run style:base -- .",
+    "style": "pnpm style:base -- .",
     "test": "jest -c ./.config/jest.config.js"
   },
   "repository": {

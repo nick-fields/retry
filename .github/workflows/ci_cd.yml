@@ -1,4 +1,10 @@
 name: CI/CD
+
+# PRs come in via the GitHub UI that skip pre-commit hooks which bundle the code.  So we have to check that the code is bundled properly here and potentially re-commit if changes are found
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.ref_name == 'master' && false || true}}
+
 on:
   # only on PRs into and merge to default branch
   pull_request:
@@ -9,9 +15,35 @@ on:
       - master
 
 jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup and cache for later jobs
+        uses: ./.github/actions/setup
+      # GHA requires bundled code, and we bundle automatically via pre-commit hook, but most contributions come in through UI which skips hooks.
+      # So bundle again here to ensure was not skipped, and if so commit the changes to ensure we're testing the correct code.
+      - name: Re-bundle and commit changes if found
+        run: |
+          pnpm bundle
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "patch: regenerated bundle"
+            git push
+          else
+            echo "No changes detected."
+          fi
+
   ci_unit:
     name: Run Unit Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,6 +59,7 @@ jobs:
   ci_integration:
     name: Run Integration Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -133,6 +166,7 @@ jobs:
   ci_integration_envvar:
     name: Run Integration Env Var Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -150,6 +184,7 @@ jobs:
   ci_integration_large_output:
     name: Run Integration Large Output Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -177,6 +212,7 @@ jobs:
   ci_integration_retry_on_exit_code:
     name: Run Integration retry_on_exit_code Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -221,6 +257,7 @@ jobs:
   ci_integration_continue_on_error:
     name: Run Integration continue_on_error Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -264,6 +301,7 @@ jobs:
   ci_integration_retry_wait_seconds:
     name: Run Integration Tests (retry_wait_seconds)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -296,6 +334,7 @@ jobs:
   ci_integration_on_retry_cmd:
     name: Run Integration Tests (on_retry_command)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -335,6 +374,7 @@ jobs:
   ci_integration_timeout_seconds:
     name: Run Integration Timeout Tests (seconds)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -361,6 +401,7 @@ jobs:
   ci_integration_timeout_retry_on_timeout:
     name: Run Integration Timeout Tests (retry_on timeout)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -388,6 +429,7 @@ jobs:
   ci_integration_timeout_retry_on_error:
     name: Run Integration Timeout Tests (retry_on error)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -419,6 +461,7 @@ jobs:
   ci_integration_timeout_minutes:
     name: Run Integration Timeout Tests (minutes)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
