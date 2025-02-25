@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
       - name: Setup and cache for later jobs
         uses: ./.github/actions/setup
       # GHA requires bundled code, and we bundle automatically via pre-commit hook, but most contributions come in through UI which skips hooks.
@@ -488,6 +490,7 @@ jobs:
   ci_windows:
     name: Run Windows Tests
     runs-on: windows-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
