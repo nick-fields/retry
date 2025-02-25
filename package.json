@@ -6,6 +6,7 @@
     "lint:base": "eslint --config ./.config/.eslintrc.js ",
     "lint": "npm run lint:base -- .",
     "local": "npm run prepare && node -r dotenv/config ./dist/index.js",
+    "preinstall": "npx only-allow pnpm",
     "prepare": "ncc build src/index.ts && husky install",
     "style:base": "prettier --config ./.config/.prettierrc.yml --ignore-path ./.config/.prettierignore --write ",
     "style": "npm run style:base -- .",
