@@ -25845,6 +25845,7 @@ var OUTPUT_EXIT_CODE_KEY = 'exit_code';
 var OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 var exit;
 var done;
+(0, core_1.info)('test');
 function getExecutable(inputs) {
     if (!inputs.shell) {
         return OS === 'win32' ? 'powershell' : 'bash';
