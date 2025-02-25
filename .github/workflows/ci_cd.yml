@@ -14,6 +14,9 @@ on:
     branches:
       - master
 
+env:
+  BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+
 jobs:
   setup:
     name: Setup
@@ -24,12 +27,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ env.BRANCH }}
       - name: Setup and cache for later jobs
         uses: ./.github/actions/setup
       # GHA requires bundled code, and we bundle automatically via pre-commit hook, but most contributions come in through UI which skips hooks.
       # So bundle again here to ensure was not skipped, and if so commit the changes to ensure we're testing the correct code.
       - name: Re-bundle and commit changes if found
+        # Don't re-bundle on on default branch
+        if: ${{ env.BRANCH != 'master' }}
         run: |
           pnpm bundle
           if [[ -n "$(git status --porcelain)" ]]; then
