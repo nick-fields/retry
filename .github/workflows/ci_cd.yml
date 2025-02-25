@@ -1,26 +1,88 @@
 name: CI/CD
+
+# PRs come in via the GitHub UI that skip pre-commit hooks which bundle the code.  So we have to check that the code is bundled properly here and potentially re-commit if changes are found
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.ref_name == 'master' && false || true}}
+
 on:
   # only on PRs into and merge to default branch
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
     branches:
       - master
   push:
     branches:
       - master
 
+env:
+  BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+  PR_TRIGGERED: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}
 jobs:
-  ci_unit:
-    name: Run Unit Tests
+  setup:
+    # Skip running if labeled event but not rerun, otehrwise its a supported trigger event
+    if: ${{ github.event.label.name == 'rerun' || github.event.action != 'labeled' }}
+    name: Setup
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+          ref: ${{ env.BRANCH }}
+      - name: Setup and cache for later jobs
+        uses: ./.github/actions/setup
+      # GHA requires bundled code to be commited so we bundle automatically via pre-commit hook. However, most contributions come in through the GH UI which skips hooks.
+      # So bundle again here just in case, and if changes are found then commit them to ensure we're testing the correct code.
+      # But GHA does not trigger on changes made via the default GH token, so we need to label the PR to re-run CI.
+      # Alternatives could be using a PAT (rotation/security burden), GH App (overkill/maintenance), or something like pre-commit.ci (not convincing). Lets try this first though
+      - name: Check for bundle changes after install
+        # Only run if not a push event since we only trigger this on the default branch and we don't want to make any non-PR changes there
+        if: ${{ github.event_name != 'push' }}
+        id: changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "CHANGES_FOUND=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected."
+            echo "CHANGES_FOUND=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit and push changes if found
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'true' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "patch: regenerated bundle"
+          git push
+      - name: Label PR to re-trigger CI
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-label "rerun"
+      - name: Remove label after clean re-run
+        # Only remove label if the PR was labeled with rerun and no changes were found. Changes found indicate a problem since they should have been previously committed
+        if: ${{ steps.changes.outputs.CHANGES_FOUND == 'false' && github.event.label.name == 'rerun' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --remove-label "rerun"
+
+  ci_unit:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Run Unit Tests
         run: npm test
       - uses: codecov/codecov-action@v5
@@ -31,15 +93,12 @@ jobs:
   ci_integration:
     name: Run Integration Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: happy-path
         id: happy_path
@@ -141,15 +200,12 @@ jobs:
   ci_integration_envvar:
     name: Run Integration Env Var Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: env-vars-passed-through
         uses: ./
         env:
@@ -162,15 +218,12 @@ jobs:
   ci_integration_large_output:
     name: Run Integration Large Output Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Test 100MiB of output can be processed
         id: large-output
         continue-on-error: true
@@ -193,15 +246,12 @@ jobs:
   ci_integration_retry_on_exit_code:
     name: Run Integration retry_on_exit_code Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: retry_on_exit_code (with expected error code)
         id: retry_on_exit_code_expected
         uses: ./
@@ -241,15 +291,12 @@ jobs:
   ci_integration_continue_on_error:
     name: Run Integration continue_on_error Tests
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: happy-path (continue_on_error)
         id: happy_path_continue_on_error
         uses: ./
@@ -288,15 +335,12 @@ jobs:
   ci_integration_retry_wait_seconds:
     name: Run Integration Tests (retry_wait_seconds)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (retry_wait_seconds)
         id: sad_path_wait_sec
@@ -324,15 +368,12 @@ jobs:
   ci_integration_on_retry_cmd:
     name: Run Integration Tests (on_retry_command)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: new-command-on-retry
         id: new-command-on-retry
@@ -367,15 +408,12 @@ jobs:
   ci_integration_timeout_seconds:
     name: Run Integration Timeout Tests (seconds)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (timeout)
         id: sad_path_timeout
@@ -397,15 +435,12 @@ jobs:
   ci_integration_timeout_retry_on_timeout:
     name: Run Integration Timeout Tests (retry_on timeout)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: retry_on (timeout)
         id: retry_on_timeout
@@ -428,15 +463,12 @@ jobs:
   ci_integration_timeout_retry_on_error:
     name: Run Integration Timeout Tests (retry_on error)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: retry_on (error) fails early if timeout encountered
         id: retry_on_error_fail
@@ -463,15 +495,12 @@ jobs:
   ci_integration_timeout_minutes:
     name: Run Integration Timeout Tests (minutes)
     runs-on: ubuntu-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
 
       - name: sad-path (timeout minutes)
         id: sad_path_timeout_minutes
@@ -493,15 +522,12 @@ jobs:
   ci_windows:
     name: Run Windows Tests
     runs-on: windows-latest
+    needs: setup
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Powershell test
         uses: ./
         with:
@@ -572,12 +598,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm ci
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v4

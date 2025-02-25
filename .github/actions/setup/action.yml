@@ -1,0 +1,15 @@
+name: Setup Node, PNPM, cache, and install dependencies
+description: Sets up job to use the nodejs version in .nvmrc, pnpm, cache, and install dependencies
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v3
+      with:
+        version: 9.5.0
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: ./.nvmrc
+        cache: 'pnpm'
+    - run: pnpm install
+      shell: bash

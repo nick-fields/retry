@@ -14,6 +14,8 @@ const OUTPUT_EXIT_ERROR_KEY = 'exit_error';
 let exit: number;
 let done: boolean;
 
+info('test');
+
 function getExecutable(inputs: Inputs): string {
   if (!inputs.shell) {
     return OS === 'win32' ? 'powershell' : 'bash';
