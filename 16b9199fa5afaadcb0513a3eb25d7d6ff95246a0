@@ -1,0 +1,27 @@
+package.json
+  c7bacb18e1f7dd29 37
+action.yml
+  c7bacb18e1f7dd29 53
+.github/workflows/ci_cd.yml
+  c7bacb18e1f7dd29 21,40,150,171,202,250,297,333,376,406,437,472,502,578
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "16b9199fa5afaadcb0513a3eb25d7d6ff95246a0",
+  "prompts": {
+    "c7bacb18e1f7dd29": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c9947872-8790-42cc-b7cd-7f4e1f359dcb",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "Nick Fields <46869826+nick-fields@users.noreply.github.com>",
+      "messages": [],
+      "total_additions": 17,
+      "total_deletions": 17,
+      "accepted_lines": 16,
+      "overriden_lines": 1
+    }
+  }
+}
