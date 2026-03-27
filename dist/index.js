@@ -1853,132 +1853,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 9335:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var childProcess = __nccwpck_require__(2081);
-var spawn = childProcess.spawn;
-var exec = childProcess.exec;
-
-module.exports = function (pid, signal, callback) {
-    if (typeof signal === 'function' && callback === undefined) {
-        callback = signal;
-        signal = undefined;
-    }
-
-    pid = parseInt(pid);
-    if (Number.isNaN(pid)) {
-        if (callback) {
-            return callback(new Error("pid must be a number"));
-        } else {
-            throw new Error("pid must be a number");
-        }
-    }
-
-    var tree = {};
-    var pidsToProcess = {};
-    tree[pid] = [];
-    pidsToProcess[pid] = 1;
-
-    switch (process.platform) {
-    case 'win32':
-        exec('taskkill /pid ' + pid + ' /T /F', callback);
-        break;
-    case 'darwin':
-        buildProcessTree(pid, tree, pidsToProcess, function (parentPid) {
-          return spawn('pgrep', ['-P', parentPid]);
-        }, function () {
-            killAll(tree, signal, callback);
-        });
-        break;
-    // case 'sunos':
-    //     buildProcessTreeSunOS(pid, tree, pidsToProcess, function () {
-    //         killAll(tree, signal, callback);
-    //     });
-    //     break;
-    default: // Linux
-        buildProcessTree(pid, tree, pidsToProcess, function (parentPid) {
-          return spawn('ps', ['-o', 'pid', '--no-headers', '--ppid', parentPid]);
-        }, function () {
-            killAll(tree, signal, callback);
-        });
-        break;
-    }
-};
-
-function killAll (tree, signal, callback) {
-    var killed = {};
-    try {
-        Object.keys(tree).forEach(function (pid) {
-            tree[pid].forEach(function (pidpid) {
-                if (!killed[pidpid]) {
-                    killPid(pidpid, signal);
-                    killed[pidpid] = 1;
-                }
-            });
-            if (!killed[pid]) {
-                killPid(pid, signal);
-                killed[pid] = 1;
-            }
-        });
-    } catch (err) {
-        if (callback) {
-            return callback(err);
-        } else {
-            throw err;
-        }
-    }
-    if (callback) {
-        return callback();
-    }
-}
-
-function killPid(pid, signal) {
-    try {
-        process.kill(parseInt(pid, 10), signal);
-    }
-    catch (err) {
-        if (err.code !== 'ESRCH') throw err;
-    }
-}
-
-function buildProcessTree (parentPid, tree, pidsToProcess, spawnChildProcessesList, cb) {
-    var ps = spawnChildProcessesList(parentPid);
-    var allData = '';
-    ps.stdout.on('data', function (data) {
-        var data = data.toString('ascii');
-        allData += data;
-    });
-
-    var onClose = function (code) {
-        delete pidsToProcess[parentPid];
-
-        if (code != 0) {
-            // no more parent processes
-            if (Object.keys(pidsToProcess).length == 0) {
-                cb();
-            }
-            return;
-        }
-
-        allData.match(/\d+/g).forEach(function (pid) {
-          pid = parseInt(pid, 10);
-          tree[parentPid].push(pid);
-          tree[pid] = [];
-          pidsToProcess[pid] = 1;
-          buildProcessTree(pid, tree, pidsToProcess, spawnChildProcessesList, cb);
-        });
-    };
-
-    ps.on('close', onClose);
-}
-
-
-/***/ }),
-
 /***/ 4294:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -24895,7 +24769,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 var core_1 = __nccwpck_require__(2186);
 var child_process_1 = __nccwpck_require__(2081);
 var milliseconds_1 = __importDefault(__nccwpck_require__(2318));
-var tree_kill_1 = __importDefault(__nccwpck_require__(9335));
 var inputs_1 = __nccwpck_require__(7063);
 var util_1 = __nccwpck_require__(2629);
 var OS = process.platform;
@@ -25011,20 +24884,24 @@ function runCmd(attempt, inputs) {
                     if (Date.now() < end_time && !done) return [3 /*break*/, 1];
                     _c.label = 4;
                 case 4:
-                    if (!(!done && child.pid)) return [3 /*break*/, 6];
+                    if (!(!done && child.pid)) return [3 /*break*/, 7];
                     timeout = true;
-                    (0, tree_kill_1.default)(child.pid);
-                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
+                    // Note: this assumes a unix environment
+                    return [4 /*yield*/, (0, child_process_1.execSync)("sudo kill -9 -- ".concat(child.pid), { stdio: 'inherit' })];
                 case 5:
+                    // Note: this assumes a unix environment
+                    _c.sent();
+                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
+                case 6:
                     _c.sent();
                     throw new Error("Timeout of ".concat((0, inputs_1.getTimeout)(inputs), "ms hit"));
-                case 6:
-                    if (!(exit > 0)) return [3 /*break*/, 8];
-                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
                 case 7:
+                    if (!(exit > 0)) return [3 /*break*/, 9];
+                    return [4 /*yield*/, (0, util_1.retryWait)(milliseconds_1.default.seconds(inputs.retry_wait_seconds))];
+                case 8:
                     _c.sent();
                     throw new Error("Child_process exited with error code ".concat(exit));
-                case 8: return [2 /*return*/];
+                case 9: return [2 /*return*/];
             }
         });
     });
