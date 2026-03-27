@@ -26,7 +26,7 @@ inputs:
     required: false
     default: 1
   retry_on:
-    description: Event to retry on.  Currently supported [any, timeout, error]
+    description: Event to retry on.  Currently supported [any, timeout, error, success]
   warning_on_retry:
     description: Whether to output a warning on retry, or just output to info. Defaults to true
     default: true
