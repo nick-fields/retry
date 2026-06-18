@@ -394,6 +394,30 @@ jobs:
           expected: failure
           actual: ${{ steps.sad_path_timeout.outcome }}
 
+      - name: sad-path (timeout persistent)
+        id: sad_path_timeout_persistent
+        uses: ./
+        continue-on-error: true
+        with:
+          timeout_seconds: 15
+          max_attempts: 2
+          command: |
+            node -e "
+            process.on('SIGTERM', () => console.log('SIGTERM ignored'));
+            setInterval(() => console.log('still running'), 1000);
+            setTimeout(() => {
+              console.log('Process stopping after lack of timeout');
+            }, 300000);
+            "
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: 2
+          actual: ${{ steps.sad_path_timeout_persistent.outputs.total_attempts }}
+      - uses: nick-invision/assert-action@v1
+        with:
+          expected: failure
+          actual: ${{ steps.sad_path_timeout_persistent.outcome }}
+
   ci_integration_timeout_retry_on_timeout:
     name: Run Integration Timeout Tests (retry_on timeout)
     runs-on: ubuntu-latest
