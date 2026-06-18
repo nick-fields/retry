@@ -24,8 +24,7 @@
   "homepage": "https://github.com/nick-fields/retry#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
-    "milliseconds": "^1.0.3",
-    "tree-kill": "^1.2.2"
+    "milliseconds": "^1.0.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
