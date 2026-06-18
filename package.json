@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/nick-fields/retry#readme",
   "dependencies": {
-    "@actions/core": "^1.10.0",
+    "@actions/core": "^1.11.1",
     "milliseconds": "^1.0.3",
     "tree-kill": "^1.2.2"
   },
